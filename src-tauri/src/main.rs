@@ -5,7 +5,6 @@
 
 mod utils;
 
-use tauri::{Manager, window};
 use utils::window::set_window_position_and_size;
 
 fn main() {

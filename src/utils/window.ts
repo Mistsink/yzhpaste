@@ -1,4 +1,4 @@
-import { open } from '@tauri-apps/api/window';
+import { open } from '@tauri-apps/api/window'
 
 export async function openClipboardPopup() {
   await open({
@@ -8,6 +8,6 @@ export async function openClipboardPopup() {
     height: 300,
     resizable: false,
     fullscreen: false,
-    frameless: false,
-  });
+    frameless: false
+  })
 }

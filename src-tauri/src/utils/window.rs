@@ -1,10 +1,8 @@
 use tauri::LogicalPosition;
 use tauri::LogicalSize;
-use tauri::PhysicalSize;
-use tauri::PhysicalPosition;
 use tauri::Window;
 
-fn get_logical_resolution(window: &Window) -> LogicalSize<u32>{
+fn get_logical_resolution(window: &Window) -> LogicalSize<u32> {
     let monitor = window.current_monitor().unwrap().expect("No monitor found");
     let inner_size = monitor.size();
     let scale_factor = monitor.scale_factor();
@@ -28,7 +26,6 @@ pub(crate) fn set_window_position_and_size(window: &Window) {
     let height = (local_size.height as f32 * (1.0 / 3.0)).round() as u32;
     let x = 0;
     let y = local_size.height - height;
-
 
     println!("size {} {}", local_size.width, local_size.height);
     println!("x {} y {} width{} height{}", x, y, width, height);

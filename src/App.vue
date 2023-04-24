@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { ref } from 'vue';
-import ClipboardPopup from './components/ClipboardPopup.vue';
+import { ref } from 'vue'
+import ClipboardPopup from './components/ClipboardPopup.vue'
 
-const ClipboardPopupRef = ref<InstanceType<typeof ClipboardPopup>>();
+const ClipboardPopupRef = ref<InstanceType<typeof ClipboardPopup>>()
 
 const showClipboardPopup = () => {
-  if (ClipboardPopupRef.value) ClipboardPopupRef.value.showPopup();
-};
+  if (ClipboardPopupRef.value) ClipboardPopupRef.value.showPopup()
+}
 
 const hideClipboardPopup = () => {
-  if (ClipboardPopupRef.value) ClipboardPopupRef.value.hidePopup();
-};
+  if (ClipboardPopupRef.value) ClipboardPopupRef.value.hidePopup()
+}
 const toggleClipboardPopup = () => {
   if (ClipboardPopupRef.value) ClipboardPopupRef.value.togglePopup()
 }
@@ -36,7 +36,6 @@ header {
   line-height: 1.5;
   max-height: 100vh;
 }
-
 
 .logo {
   display: block;
