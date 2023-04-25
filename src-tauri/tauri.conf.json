@@ -12,7 +12,13 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "all": false,
+      "window": {
+        "setSkipTaskbar": true
+      },
+      "clipboard": {
+        "all": true
+      }
     },
     "bundle": {
       "active": true,
@@ -61,8 +67,19 @@
         "decorations": true,
         "x": null,
         "y": null,
-        "skipTaskbar": true      
+        "skipTaskbar": true,
+        "transparent": true
       }
-    ]
+    ],
+    "macOSPrivateApi": true,
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true
+    }
+  },
+  "plugins": {
+    "clipboard_listener": {
+      "path": "src-tauri/clipboard_listener"
+    }
   }
 }

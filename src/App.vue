@@ -19,16 +19,14 @@ const toggleClipboardPopup = () => {
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
     <div class="wrapper">
       <!-- <RouterView /> -->
       <button @click="showClipboardPopup">showClipboardPopup</button>
       <button @click="hideClipboardPopup">hideClipboardPopup</button>
       <button @click="toggleClipboardPopup">toggleClipboardPopup</button>
-      <ClipboardPopup ref="ClipboardPopupRef" />
     </div>
   </header>
+  <ClipboardPopup ref="ClipboardPopupRef" />
 </template>
 
 <style scoped>
@@ -80,8 +78,12 @@ nav a:first-of-type {
 
   header .wrapper {
     display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
+    /* background-color: aqua; */
+    /* place-items: flex-start; */
+    /* flex-wrap: wrap; */
+    width: 100vw;
+    justify-content: space-evenly;
+    align-items: center;
   }
 
   nav {

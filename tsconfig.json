@@ -7,7 +7,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["node"]
+    // "types": ["node"]
   },
   "references": [
     {

@@ -2,7 +2,7 @@
 import ClipboardHistory from './ClipboardHistory.vue'
 import { ref } from 'vue'
 
-const isVisible = ref(false)
+const isVisible = ref(true)
 
 const showPopup = () => {
   isVisible.value = true
