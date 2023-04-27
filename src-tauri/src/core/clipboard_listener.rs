@@ -5,10 +5,8 @@ use base64::{
     Engine as _,
 };
 use serde_json::json;
-use tauri::Window;
 
-#[tauri::command]
-pub async fn get_clipboard_data(window: Window) -> Result<String, String> {
+pub async fn get_clipboard_data() -> Result<String, String> {
     const CUSTOM_ENGINE: engine::GeneralPurpose =
         engine::GeneralPurpose::new(&alphabet::URL_SAFE, general_purpose::NO_PAD);
     let mut clipboard = Clipboard::new().unwrap();

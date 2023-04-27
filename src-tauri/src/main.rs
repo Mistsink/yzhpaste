@@ -3,19 +3,31 @@
     windows_subsystem = "windows"
 )]
 
-mod plugins;
+mod cmds;
+mod core;
 mod setup;
-mod tray;
 mod utils;
 
-use utils::window::set_window_position_and_size;
-use plugins::clipboard_listener::get_clipboard_data;
+use crate::core::{tray};
+use utils::window_util::set_window_position_and_size;
 
 fn main() {
     let context = tauri::generate_context!();
     tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![get_clipboard_data])
-    .menu(tauri::Menu::os_default(&context.package_info().name))
+        .invoke_handler(tauri::generate_handler![
+            cmds::get_clipboard_data,
+            cmds::clear_data,
+            cmds::insert_record,
+            cmds::insert_if_not_exist,
+            cmds::find_all_record,
+            cmds::mark_favorite,
+            cmds::save_tags,
+            cmds::find_by_key,
+            cmds::delete_over_limit,
+            cmds::delete_by_id
+            // cmds::write_to_clip,
+        ])
+        .menu(tauri::Menu::os_default(&context.package_info().name))
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
         .on_page_load(|window, _| {
