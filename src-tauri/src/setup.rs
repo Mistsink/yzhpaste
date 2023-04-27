@@ -1,7 +1,10 @@
+use crate::core::{clipboard_listener, database::SqliteDB};
 use tauri::{App, Manager};
 use window_vibrancy::{self, NSVisualEffectMaterial};
 
 pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>> {
+    SqliteDB::init();
+    clipboard_listener::ClipboardWatcher::start();
     init_window(app);
     Ok(())
 }

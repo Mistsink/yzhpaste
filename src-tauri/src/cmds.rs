@@ -39,13 +39,13 @@ pub fn insert_if_not_exist(r: Record) -> bool {
 }
 
 #[tauri::command]
-pub fn find_all_record() -> Vec<Record> {
+pub fn find_all_records() -> Vec<Record> {
     SqliteDB::new().find_all().unwrap()
 }
 
 #[tauri::command]
-pub fn mark_favorite(id: u64) -> bool {
-    match SqliteDB::new().mark_favorite(id) {
+pub fn mark_pined(id: u64) -> bool {
+    match SqliteDB::new().mark_pined(id) {
         Ok(_i) => true,
         Err(e) => {
             println!("err:{}", e);
@@ -84,6 +84,17 @@ pub fn find_by_key(query: QueryReq) -> Vec<Record> {
 #[tauri::command]
 pub fn delete_over_limit(limit: usize) -> bool {
     match SqliteDB::new().delete_over_limit(limit) {
+        Ok(res) => res,
+        Err(e) => {
+            println!("err:{}", e);
+            false
+        }
+    }
+}
+
+#[tauri::command]
+pub fn delete_older_than_days(days: i64) -> bool {
+    match SqliteDB::new().delete_older_than_days(days) {
         Ok(res) => res,
         Err(e) => {
             println!("err:{}", e);

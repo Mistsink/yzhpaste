@@ -19,12 +19,13 @@ fn main() {
             cmds::clear_data,
             cmds::insert_record,
             cmds::insert_if_not_exist,
-            cmds::find_all_record,
-            cmds::mark_favorite,
+            cmds::find_all_records,
+            cmds::mark_pined,
             cmds::save_tags,
             cmds::find_by_key,
             cmds::delete_over_limit,
-            cmds::delete_by_id
+            cmds::delete_by_id,
+            cmds::delete_older_than_days
             // cmds::write_to_clip,
         ])
         .menu(tauri::Menu::os_default(&context.package_info().name))
