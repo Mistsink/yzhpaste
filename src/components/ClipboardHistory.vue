@@ -1,36 +1,23 @@
 <script setup lang="ts">
-import { onMounted, onUpdated, ref, watchEffect } from 'vue'
-import { clipboard, tauri } from '@tauri-apps/api'
-import { useClipboardStore } from '@/stores/clipdoard';
+import { onMounted, ref } from 'vue'
+import { type Record, cmd_find_all_records } from '../services/cmds'
 
-interface ClipboardContent {
-  text: string
-  html: string
-  image: string
-}
+const records = ref<Record[]>([])
 
-const useClipboardContent = (str: string): ClipboardContent => {
-  return {
-    text: str,
-    html: 'html',
-    image: 'image'
-  }
-}
-
-const histories = ref<Array<ClipboardContent>>([])
-
-const clipboardStore = useClipboardStore()
-
+onMounted(async () => {
+  records.value = await cmd_find_all_records()
+  console.log(`records: ${records.value}`)
+})
 </script>
 
 <template>
   <div class="clipboard-history">
     <h2>Clipboard History</h2>
-    <div v-if="clipboardStore?.histories?.length === 0">No clipboard history available.</div>
+    <div v-if="records.length === 0">No clipboard history available.</div>
     <ul v-else class="histories">
-      <li v-for="(item, index) in clipboardStore.histories" :key="index">
+      <li v-for="(item, index) in records" :key="index">
         <div class="clipboard-item">
-          <span>{{ item }}</span>
+          <span>{{ item.content }}</span>
         </div>
       </li>
     </ul>
