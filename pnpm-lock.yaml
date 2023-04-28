@@ -12,6 +12,12 @@ dependencies:
     version: 4.1.6(vue@3.2.47)
 
 devDependencies:
+  '@headlessui/vue':
+    specifier: ^1.7.13
+    version: 1.7.13(vue@3.2.47)
+  '@heroicons/vue':
+    specifier: ^2.0.17
+    version: 2.0.17(vue@3.2.47)
   '@rushstack/eslint-patch':
     specifier: ^1.2.0
     version: 1.2.0
@@ -610,6 +616,23 @@ packages:
   /@eslint/js@8.39.0:
     resolution: {integrity: sha512-kf9RB0Fg7NZfap83B3QOqOGg9QmD9yBudqQXzzOtn3i4y7ZUXe5ONeW34Gwi+TxhH4mvj72R1Zc300KUMa9Bng==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    dev: true
+
+  /@headlessui/vue@1.7.13(vue@3.2.47):
+    resolution: {integrity: sha512-obG5TdPdBDfs+jiA1mY29LPFqyJl93Q90EL86ontfRe1B6XvbjPkx+x1aAC5DA18bXbb0Juni1ayDbXo0w1u0A==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      vue: ^3.2.0
+    dependencies:
+      vue: 3.2.47
+    dev: true
+
+  /@heroicons/vue@2.0.17(vue@3.2.47):
+    resolution: {integrity: sha512-M5P6Y9tmctbtv/IC1dO5vTw9xqppYxm/5BKuL4hGlxxLvaxbnTmMAoxTIzezSdYAaLh63emgOCBMa+mxphRxUQ==}
+    peerDependencies:
+      vue: '>= 3'
+    dependencies:
+      vue: 3.2.47
     dev: true
 
   /@humanwhocodes/config-array@0.11.8:

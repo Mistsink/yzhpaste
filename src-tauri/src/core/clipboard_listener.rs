@@ -1,4 +1,4 @@
-use super::database;
+use super::database::{self, ImageDataDB};
 use crate::core::database::Record;
 use crate::utils::{img_util, json_util, string_util};
 use arboard::Clipboard;
@@ -8,16 +8,10 @@ use base64::{
     Engine as _,
 };
 use chrono::Duration;
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::thread;
 
-#[derive(Default, Debug, Clone, Deserialize, Serialize)]
-pub struct ImageDataDB {
-    pub width: usize,
-    pub height: usize,
-    pub base64: String,
-}
+
 
 pub async fn get_clipboard_data() -> Result<String, String> {
     const CUSTOM_ENGINE: engine::GeneralPurpose =

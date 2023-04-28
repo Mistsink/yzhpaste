@@ -1,8 +1,19 @@
 use crate::utils::dirs::app_data_dir;
 use crate::utils::string_util;
 use anyhow::Result;
-use rusqlite::{Connection, OpenFlags, ffi::SQLITE_OPEN_CREATE};
-use std::{fs::{self, File}, path::Path};
+use rusqlite::{ffi::SQLITE_OPEN_CREATE, Connection, OpenFlags};
+use serde::{Deserialize, Serialize};
+use std::{
+    fs::{self, File},
+    path::Path,
+};
+
+#[derive(Default, Debug, Clone, Deserialize, Serialize)]
+pub struct ImageDataDB {
+    pub width: usize,
+    pub height: usize,
+    pub base64: String,
+}
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, PartialEq)]
 pub struct Record {
@@ -44,7 +55,11 @@ impl SqliteDB {
             fs::create_dir_all(&dir_path).unwrap();
         }
 
-        let c = Connection::open_with_flags(&data_dir,OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE).unwrap();
+        let c = Connection::open_with_flags(
+            &data_dir,
+            OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE,
+        )
+        .unwrap();
         let s = SqliteDB { conn: c };
         s
     }
@@ -55,7 +70,11 @@ impl SqliteDB {
         if !Path::new(&dir_path).exists() {
             fs::create_dir_all(&dir_path).unwrap();
         }
-        let c = Connection::open_with_flags(data_dir, OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE).unwrap();
+        let c = Connection::open_with_flags(
+            data_dir,
+            OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE,
+        )
+        .unwrap();
         let sql = r#"
         create table if not exists record
         (

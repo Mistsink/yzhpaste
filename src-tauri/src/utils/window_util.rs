@@ -26,7 +26,7 @@ pub(crate) fn set_window_position_and_size(window: &Window) {
     let local_size = get_logical_resolution(window);
 
     let width = local_size.width;
-    let height = (local_size.height as f32 * (1.0 / 3.0)).round() as u32;
+    let height = (local_size.height as f32 * (2.0 / 5.0)).round() as u32;
     let x = 0;
     let y = local_size.height - height;
 

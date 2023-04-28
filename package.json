@@ -17,6 +17,8 @@
     "vue-router": "^4.1.6"
   },
   "devDependencies": {
+    "@headlessui/vue": "^1.7.13",
+    "@heroicons/vue": "^2.0.17",
     "@rushstack/eslint-patch": "^1.2.0",
     "@tauri-apps/api": "^1.2.0",
     "@tauri-apps/cli": "^1.2.3",
