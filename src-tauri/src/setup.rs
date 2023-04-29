@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::core::{clipboard_listener, database::SqliteDB};
 use tauri::{App, Manager};
 use window_vibrancy::{self, NSVisualEffectMaterial};

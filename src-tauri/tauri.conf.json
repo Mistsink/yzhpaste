@@ -14,9 +14,12 @@
     "allowlist": {
       "all": false,
       "window": {
-        "setSkipTaskbar": true
+        "all": true
       },
       "clipboard": {
+        "all": true
+      },
+      "globalShortcut": {
         "all": true
       }
     },
@@ -68,7 +71,8 @@
         "x": null,
         "y": null,
         "skipTaskbar": true,
-        "transparent": true
+        "transparent": true,
+        "focus": true
       }
     ],
     "macOSPrivateApi": true,

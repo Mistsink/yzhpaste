@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import { onBeforeUnmount, onMounted } from 'vue';
 import { RouterView } from 'vue-router'
+import {useWindowSC, unuseWindowSC} from './services/shortcuts'
+
+onMounted(useWindowSC)
+onBeforeUnmount(unuseWindowSC)
 </script>
 
 <template>
