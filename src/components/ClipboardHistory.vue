@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { nextTick, onBeforeMount, onMounted, ref, watchEffect } from 'vue'
+import { nextTick, onBeforeMount, onMounted, ref, watch, watchEffect } from 'vue'
 import { type Record, cmd_find_all_records } from '../services/cmds'
+import { useScrollToSelectedItem } from '@/utils/scroll'
 
 const records = ref<Record[]>([])
 
@@ -8,6 +9,8 @@ onMounted(async () => {
   records.value = await cmd_find_all_records()
   console.log(records.value)
   window.data = records.value
+  window.HistoryCtnRef = HistoryCtnRef
+  window.currentFocusIndex = currentFocusIndex
 
 
   nextTick(() => {
@@ -45,6 +48,14 @@ const setCurrentFocusIndex = (newIndex: number) => {
   }
 }
 
+watch(currentFocusIndex, () => {
+  scrollToSelectedItem();
+});
+const scrollToSelectedItem = () => {
+  const selectedItem = HistoryCtnRef.value.querySelector(`li:nth-child(${currentFocusIndex.value + 1})`)
+  useScrollToSelectedItem(HistoryCtnRef.value, selectedItem, 0.8)
+};
+
 const onKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
     event.preventDefault()
@@ -53,19 +64,11 @@ const onKeyDown = (event: KeyboardEvent) => {
     } else {
       setCurrentFocusIndex(currentFocusIndex.value + 1)
     }
-    const newFocusElement = HistoryCtnRef.value.querySelector(`li:nth-child(${currentFocusIndex.value + 1})`)
-    if (newFocusElement) {
-      newFocusElement.focus()
-    }
   }
 }
 const onEnter = (event: KeyboardEvent) => {
-  if (event.key === 'Enter') {
-    const focusElement = document.activeElement
-    const focusIndex = Array.from(HistoryCtnRef.value.children).indexOf(focusElement)
-    const focusRecord = records.value[focusIndex]
-    console.log('当前焦点元素：', focusElement, '对应的记录数据：', focusRecord)
-  }
+  if (event.key !== 'Enter') return
+  console.log(records.value[currentFocusIndex.value])
 }
 </script>
 
@@ -73,26 +76,24 @@ const onEnter = (event: KeyboardEvent) => {
   <div class="bg-slate-500 w-full h-full 
   flex justify-center items-center">
     <p v-if="records.length === 0" class="text-4xl">No clipboard history available.</p>
-    <ul ref="HistoryCtnRef" v-else 
-    class="flex flex-row 
+    <ul ref="HistoryCtnRef" v-else class="flex flex-row 
     space-x-4 overflow-x-auto
-    p-4
+    p-4 pl-6 pr-6
      h-full
-     snap-x snap-proximity
-     histories-container
+     histories-container hide-scrollbar
      ">
-      <li v-for="(item, index) in records" :key="index" :tabindex="index" class="
+      <li v-for="(item, index) in records" :key="index" class="
+      overflow-hidden
       rounded-md
       flex-none
       inline-flex
       justify-between
     odd:bg-green-200 even:bg-orange-200
-      p-4 w-full h-full flex-col
-      focus:outline focus:outline-blue-500 
-      snap-start
-      " @keyup.enter="onEnter">
-        <p class="flex-none underline bg-red-300">{{ index + 1 }}</p>
+      w-full h-full flex-col
+      " :class="{ 'outline outline-blue-500': index === currentFocusIndex }">
+        <p class="flex-none underline bg-red-300 roundedt-md">{{ index + 1 }}</p>
         <p v-if="item.data_type === 'text'" class="flex-auto 
+        pl-4 pr-4
           bg-sky-200  
         break-words 
           whitespace-pre-wrap
@@ -129,5 +130,13 @@ li {
 
 .shadow-top {
   box-shadow: 0 -10px 20px rgba(254, 240, 138, 0.9);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
