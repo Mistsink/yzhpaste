@@ -18,7 +18,7 @@ export interface RecordText {
   content_preview: string
 }
 
-export interface RecordCommon  {
+export interface RecordCommon {
   id: number
   md5: string
   active_time: number
@@ -73,8 +73,8 @@ export const cmd_insert_if_not_exist = async (record: Record): Promise<boolean> 
 }
 
 export const cmd_find_all_records = async (): Promise<Record[]> => {
-  const records : RecordOrigin[] = await invoke('find_all_records')
-  return records.map(r => {
+  const records: RecordOrigin[] = await invoke('find_all_records')
+  return records.map((r) => {
     if (r.data_type === 'image') r.content = JSON.parse(r.content)
     return r as Record
   })
@@ -93,8 +93,8 @@ export const cmd_delete_by_id = async (id: number): Promise<boolean> => {
 }
 
 export const cmd_find_by_key = async (query: QueryReq): Promise<Record[]> => {
-  const records : RecordOrigin[] = await invoke('find_by_key', { query })
-  return records.map(r => {
+  const records: RecordOrigin[] = await invoke('find_by_key', { query })
+  return records.map((r) => {
     if (r.data_type === 'image') r.content = JSON.parse(r.content)
     return r as Record
   })
@@ -106,4 +106,8 @@ export const cmd_delete_over_limit = async (limit: number): Promise<boolean> => 
 
 export const cmd_delete_older_than_days = async (days: number): Promise<boolean> => {
   return await invoke('delete_older_than_days', { days })
+}
+
+export const cmd_open_window = async () => {
+  await invoke('open_window')
 }

@@ -47,7 +47,7 @@ const SQLITE_FILE: &str = "data.sqlite";
 #[allow(unused)]
 impl SqliteDB {
     pub fn new() -> Self {
-        println!("new fn");
+        // println!("new fn");
         let dir_path = app_data_dir().unwrap();
         let data_dir = dir_path.join(SQLITE_FILE);
 

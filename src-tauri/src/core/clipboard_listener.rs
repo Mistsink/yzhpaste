@@ -54,12 +54,12 @@ impl ClipboardWatcher {
             let mut cnt = 1;
             loop {
 
-                println!("before db new");
+                // println!("before db new");
                 let db = database::SqliteDB::new();
-                println!("after db new");
+                // println!("after db new");
                 let text = clipboard.get_text();
                 
-                println!("!!!!!!!!! cnt: {} text: {:?}", cnt, text);
+                // println!("!!!!!!!!! cnt: {} text: {:?}", cnt, text);
                 cnt = cnt + 1;
 
                 let _ = text.map(|text| {

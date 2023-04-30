@@ -1,10 +1,19 @@
-use crate::core::{
-    clipboard_listener,
-    database::{QueryReq, Record, SqliteDB},
+use tauri::{AppHandle, Manager, State};
+
+use crate::{
+    core::{
+        clipboard_listener,
+        database::{QueryReq, Record, SqliteDB},
+        global::GLOBAL,
+    },
+    utils::{dispatch_util, window_util::focus_window},
+    GAppHandle, PreviousProcessId,
 };
 
+type CmdResult<T = ()> = Result<T, String>;
+
 #[tauri::command]
-pub async fn get_clipboard_data() -> Result<String, String> {
+pub async fn get_clipboard_data() -> CmdResult<String> {
     clipboard_listener::get_clipboard_data().await
 }
 
@@ -103,6 +112,83 @@ pub fn delete_older_than_days(days: i64) -> bool {
     }
 }
 
+#[tauri::command]
+pub fn open_window() -> CmdResult {
+    println!("open window");
+    // GLOBAL.lock()
+    let binding = GLOBAL.lock();
+    let app_handle = binding.get_handle();
+    if let Some(app) = app_handle {
+        if let Some(window) = app.get_window("main") {
+            if window.is_visible().unwrap() {
+                let _ = window.close();
+                return Ok(());
+            }
+            let _ = window.unminimize();
+            _ = window.show();
+            _ = window.set_focus();
+            return Ok(());
+        }
+
+        let new_window = tauri::window::WindowBuilder::new(
+            app,
+            "main".to_string(),
+            tauri::WindowUrl::App("index.html".into()),
+        )
+        .title("yzhpaste")
+        .visible(false)
+        .resizable(false)
+        .fullscreen(false)
+        .transparent(true)
+        .decorations(true)
+        .skip_taskbar(true)
+        .build();
+
+        match new_window {
+            Ok(window) => {
+                println!("new window");
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+            Err(e) => {
+                println!("create_window error: {}", e);
+            }
+        }
+    }
+    println!("寄，没拿到 app handle");
+    // let new_window = tauri::window::WindowBuilder::new(
+    //     app_handle,
+    //     label.to_string(),
+    //     tauri::WindowUrl::App(url.into()),
+    // )
+    // .title(title)
+    // .center()
+    // .visible(false)
+    // .resizable(window_info.resizable)
+    // .fullscreen(window_info.fullscreenable)
+    // .always_on_top(window_info.always_on_top)
+    // .inner_size(window_info.width, window_info.height)
+    // .transparent(window_info.transparent)
+    // .decorations(window_info.decorations)
+    // .skip_taskbar(window_info.skip_taskbar)
+    // .center()
+    // .build();
+    // match new_window {
+    //     Ok(window) => {
+    //         println!("new window");
+    //         let _ = window.show();
+    //         let _ = window.set_focus();
+    //         if let WindowType::Main = window_type {
+    //             set_shadow(&window, true).expect("Unsupported platform!");
+    //         }
+    //     }
+    //     Err(e) => {
+    //         println!("create_window error: {}", e);
+    //     }
+    // }
+    Ok(())
+}
+
 // #[tauri::command]
 // pub fn write_to_clip(id: u64) -> bool {
 //     let record = SqliteDB::new().find_by_id(id);
@@ -121,4 +207,17 @@ pub fn delete_older_than_days(days: i64) -> bool {
 //             false
 //         }
 //     }
+// }
+
+// #[tauri::command]
+// pub fn focus_previous_window() -> CmdResult {
+//     focus_window(*PreviousProcessId.lock().unwrap());
+//     Ok(())
+// }
+
+// #[tauri::command]
+// pub fn paste_in_previous_window() -> CmdResult {
+//     focus_window(*PreviousProcessId.lock().unwrap());
+//     dispatch_util::paste();
+//     Ok(())
 // }

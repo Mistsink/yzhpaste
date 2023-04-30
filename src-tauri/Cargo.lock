@@ -101,6 +101,8 @@ dependencies = [
  "chrono",
  "cocoa 0.24.1",
  "image",
+ "lazy_static",
+ "parking_lot",
  "rdev",
  "rusqlite",
  "rust-crypto",

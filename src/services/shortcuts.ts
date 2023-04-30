@@ -7,13 +7,13 @@ import {
   type ShortcutHandler
 } from '@tauri-apps/api/globalShortcut'
 import { getCurrent, appWindow } from '@tauri-apps/api/window'
+import { cmd_open_window } from './cmds'
 
 const SCopenWindow = async () => {
   const p = await appWindow.outerPosition()
   await appWindow.setSkipTaskbar(true)
-  console.log('before', p)
   await register('CmdOrCtrl+Shift+C', async () => {
-    const curWindow = getCurrent()
+    await cmd_open_window()
     //     const currentWindow = appWindow.get();
     //   // 获取之前的窗口位置
     //   const currentPosition = await currentWindow.getPosition();
@@ -21,11 +21,14 @@ const SCopenWindow = async () => {
     //   await currentWindow.show();
     //   // 将新窗口移动到之前的位置
     //   await currentWindow.setPosition(currentPosition[0], currentPosition[1]);
-    console.log('reopen', p)
-    await curWindow.show()
-    await curWindow.setPosition(p)
-    await curWindow.setFocus()
-    await curWindow.setSkipTaskbar(true)
+    // const curWindow = getCurrent()
+    // console.log('reopen', p)
+    // await curWindow.show()
+    // await curWindow.setPosition(p)
+    // await curWindow.setFocus()
+    // await curWindow.setSkipTaskbar(true)
+
+
   }).catch(console.error)
 }
 

@@ -8,12 +8,20 @@ mod core;
 mod setup;
 mod utils;
 
-use crate::core::{tray};
+use std::sync::Mutex;
+
+use crate::core::tray;
+use tauri::Manager;
 use utils::window_util::set_window_position_and_size;
+pub struct PreviousProcessId(Mutex<i32>);
+pub struct GAppHandle(Mutex<Option<tauri::AppHandle>>);
 
 fn main() {
+    // let g_app_handle = ;
+
     let context = tauri::generate_context!();
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
+        .manage(GAppHandle(Mutex::new(None)))
         .invoke_handler(tauri::generate_handler![
             cmds::get_clipboard_data,
             cmds::clear_data,
@@ -25,8 +33,8 @@ fn main() {
             cmds::find_by_key,
             cmds::delete_over_limit,
             cmds::delete_by_id,
-            cmds::delete_older_than_days
-            // cmds::write_to_clip,
+            cmds::delete_older_than_days, // cmds::write_to_clip,
+            cmds::open_window
         ])
         .menu(tauri::Menu::os_default(&context.package_info().name))
         .system_tray(tray::menu())
@@ -35,7 +43,18 @@ fn main() {
             println!("on page load");
             set_window_position_and_size(&window);
         })
-        .setup(setup::init)
-        .run(context)
+        .setup(move |app| setup::init(app))
+        .build(context)
         .expect("error while running tauri application");
+    app.run(|app, e| match e {
+        tauri::RunEvent::ExitRequested { api, .. } => {
+            println!("exit requested");
+            api.prevent_exit();
+        }
+        tauri::RunEvent::Exit => {
+            println!("exit");
+            app.exit(0);
+        }
+        _ => {}
+    })
 }

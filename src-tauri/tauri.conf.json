@@ -64,12 +64,11 @@
     },
     "windows": [
       {
+        "label": "main",
         "fullscreen": false,
         "title": "yzhpaste",
         "resizable": false,
         "decorations": true,
-        "x": null,
-        "y": null,
         "skipTaskbar": true,
         "transparent": true,
         "focus": true

@@ -14,7 +14,7 @@ pub fn menu() -> SystemTray {
 
 // 菜单事件
 pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
-    // 获取应用窗口
+    // 获取应用窗口 // TODO get window from GLOBAL
     let window = app.get_window("main").unwrap();
     let parent_window = Some(&window);
     // 匹配点击事件
@@ -46,6 +46,7 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
         // 根据菜单 id 进行事件匹配
         SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
             "quit" => {
+                app.exit(0);
                 std::process::exit(0);
             }
             "show" => {

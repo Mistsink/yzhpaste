@@ -1,18 +1,29 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
-use crate::core::{clipboard_listener, database::SqliteDB};
-use tauri::{App, Manager};
+use crate::{
+    core::{clipboard_listener, database::SqliteDB, global::GLOBAL},
+    GAppHandle,
+};
+use tauri::{App, Manager, State, StateManager, AppHandle};
 use window_vibrancy::{self, NSVisualEffectMaterial};
 
-pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>> {
+pub fn init(
+    app: &mut App
+) -> std::result::Result<(), Box<dyn std::error::Error>> {
+    println!("init");
+
+    GLOBAL.lock().init(app.app_handle());
+    init_window(app);
+    
     SqliteDB::init();
     clipboard_listener::ClipboardWatcher::start();
-    init_window(app);
     Ok(())
 }
 
-fn init_window(app: &mut App) {
+pub fn init_window(app: &mut App) {
+    app.set_activation_policy(tauri::ActivationPolicy::Accessory);
     let win = app.get_window("main").unwrap();
+    let _ = win.set_skip_taskbar(true);
 
     // 仅在 macOS 下执行
     #[cfg(target_os = "macos")]
