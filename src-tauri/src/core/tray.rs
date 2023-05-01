@@ -1,4 +1,9 @@
-use tauri::{AppHandle, SystemTrayEvent, SystemTray, CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem, SystemTraySubmenu, Manager};
+use tauri::{
+    AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
+    SystemTrayMenuItem, SystemTraySubmenu,
+};
+
+use super::global::GLOBAL;
 
 // 托盘菜单
 pub fn menu() -> SystemTray {
@@ -15,48 +20,41 @@ pub fn menu() -> SystemTray {
 // 菜单事件
 pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
     // 获取应用窗口 // TODO get window from GLOBAL
-    let window = app.get_window("main").unwrap();
-    let parent_window = Some(&window);
-    // 匹配点击事件
-    match event {
-        // 左键点击
-        SystemTrayEvent::LeftClick {
-            position: _,
-            size: _,
-            ..
-        } => {
-            println!("system tray received a left click");
-        }
-        // 右键点击
-        SystemTrayEvent::RightClick {
-            position: _,
-            size: _,
-            ..
-        } => {
-            println!("system tray received a right click");
-        }
-        // 双击，macOS / Linux 不支持
-        SystemTrayEvent::DoubleClick {
-            position: _,
-            size: _,
-            ..
-        } => {
-            println!("system tray received a double click");
-        }
-        // 根据菜单 id 进行事件匹配
-        SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
-            "quit" => {
-                app.exit(0);
-                std::process::exit(0);
+    if let (Some(window), _) = GLOBAL.lock().get_window() {
+        match event {
+            // 左键点击
+            SystemTrayEvent::LeftClick {
+                position: _,
+                size: _,
+                ..
+            } => {
+                println!("system tray received a left click");
             }
-            "show" => {
-                window.show().unwrap();
+            // 右键点击
+            SystemTrayEvent::RightClick {
+                position: _,
+                size: _,
+                ..
+            } => {
+                println!("system tray received a right click");
             }
-            "hide" => {
-                window.hide().unwrap();
-            }
+            // 根据菜单 id 进行事件匹配
+            SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
+                "quit" => {
+                    app.exit(0);
+                    std::process::exit(0);
+                }
+                "show" => {
+                    window.show().unwrap();
+                }
+                "hide" => {
+                    window.hide().unwrap();
+                }
+                _ => {}
+            },
             _ => {}
-        },
-        _ => {}
+        }
     }
+
+    // 匹配点击事件
 }

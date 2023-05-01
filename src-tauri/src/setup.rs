@@ -1,22 +1,23 @@
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    core::{clipboard_listener, database::SqliteDB, global::GLOBAL},
+    core::{clipboard, database::SqliteDB, global::GLOBAL},
     GAppHandle,
 };
-use tauri::{App, Manager, State, StateManager, AppHandle};
+use tauri::{App, AppHandle, Manager, State, StateManager};
 use window_vibrancy::{self, NSVisualEffectMaterial};
 
-pub fn init(
-    app: &mut App
-) -> std::result::Result<(), Box<dyn std::error::Error>> {
+pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("init");
 
     GLOBAL.lock().init(app.app_handle());
-    init_window(app);
-    
+
     SqliteDB::init();
-    clipboard_listener::ClipboardWatcher::start();
+    clipboard::ClipboardWatcher::start();
+    GLOBAL.lock().setup();
+    GLOBAL.lock().get_window();
+    init_window(app);
+
     Ok(())
 }
 
@@ -34,4 +35,6 @@ pub fn init_window(app: &mut App) {
     #[cfg(target_os = "windows")]
     window_vibrancy::apply_blur(&win, Some((18, 18, 18, 125)))
         .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
+
+    _ = win.show();
 }

@@ -4,18 +4,19 @@ import { RouterView } from 'vue-router'
 import { useWindowSC, unuseWindowSC } from './services/shortcuts'
 import { app, process } from '@tauri-apps/api'
 import { appWindow } from '@tauri-apps/api/window'
+import { cmd_print } from './services/cmds';
 
 onMounted(async () => {
-  console.log('on mounted')
+  await cmd_print('on mounted')
   await useWindowSC()
 })
 onBeforeUnmount(async () => {
-  console.log('on before unmount')
+  await cmd_print('on before unmount')
   await unuseWindowSC()
 })
 
-onUpdated(() => {
-  console.log('on updated')
+onUpdated(async () => {
+  await cmd_print('on updated')
   console.log(app)
   console.log(process)
   console.log(appWindow)

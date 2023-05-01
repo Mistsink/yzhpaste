@@ -62,18 +62,6 @@
     "updater": {
       "active": false
     },
-    "windows": [
-      {
-        "label": "main",
-        "fullscreen": false,
-        "title": "yzhpaste",
-        "resizable": false,
-        "decorations": true,
-        "skipTaskbar": true,
-        "transparent": true,
-        "focus": true
-      }
-    ],
     "macOSPrivateApi": true,
     "systemTray": {
       "iconPath": "icons/icon.png",

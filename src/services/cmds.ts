@@ -111,3 +111,15 @@ export const cmd_delete_older_than_days = async (days: number): Promise<boolean>
 export const cmd_open_window = async () => {
   await invoke('open_window')
 }
+
+export const cmd_print = async (msg: string) => {
+  await invoke('print', { msg })
+}
+
+export const cmd_escape_win = async () => {
+  await invoke('escape_win')
+}
+
+export const cmd_write_to_clip = async (id: number) => {
+  await invoke('write_to_clip', { id })
+}

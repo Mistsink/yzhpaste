@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { nextTick, onBeforeMount, onMounted, ref, watch, watchEffect } from 'vue'
-import { type Record, cmd_find_all_records } from '../services/cmds'
+import { type Record, cmd_find_all_records, cmd_print } from '../services/cmds'
 import { useScrollToSelectedItem } from '@/utils/scroll'
+import { useEnterAndEsc } from '@/services/shortcuts'
 
 const records = ref<Record[]>([])
 
@@ -66,9 +67,28 @@ const onKeyDown = (event: KeyboardEvent) => {
     }
   }
 }
-const onEnter = (event: KeyboardEvent) => {
+const onEnter = async (event: KeyboardEvent) => {
   if (event.key !== 'Enter') return
-  console.log(records.value[currentFocusIndex.value])
+  const record = records.value[currentFocusIndex.value]
+  await cmd_print(JSON.stringify(record))
+  await useEnterAndEsc(record.id)
+}
+
+const clickTimeout = ref<number>(-1)
+const onSingleClick = async (idx: number) => {
+  clearTimeout(clickTimeout.value);
+
+  clickTimeout.value = setTimeout(async () => {
+    await cmd_print("Single click");
+    setCurrentFocusIndex(idx)
+  }, 250);
+}
+const onDoubleClick = async (idx: number) => {
+  clearTimeout(clickTimeout.value);
+  setCurrentFocusIndex(idx)
+  const record = records.value[currentFocusIndex.value]
+  await cmd_print(JSON.stringify(record))
+  await useEnterAndEsc(record.id)
 }
 </script>
 
@@ -82,7 +102,8 @@ const onEnter = (event: KeyboardEvent) => {
      h-full
      histories-container hide-scrollbar
      ">
-      <li v-for="(item, index) in records" :key="index" class="
+      <li v-for="(item, index) in records" :key="index" @click="() => onSingleClick(index)"
+        @dblclick="() => onDoubleClick(index)" class="
       overflow-hidden
       rounded-md
       flex-none
@@ -135,6 +156,7 @@ li {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

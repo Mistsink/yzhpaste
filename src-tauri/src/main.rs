@@ -10,7 +10,7 @@ mod utils;
 
 use std::sync::Mutex;
 
-use crate::core::tray;
+use crate::core::{global::GLOBAL, tray};
 use tauri::Manager;
 use utils::window_util::set_window_position_and_size;
 pub struct PreviousProcessId(Mutex<i32>);
@@ -33,15 +33,21 @@ fn main() {
             cmds::find_by_key,
             cmds::delete_over_limit,
             cmds::delete_by_id,
-            cmds::delete_older_than_days, // cmds::write_to_clip,
-            cmds::open_window
+            cmds::delete_older_than_days,
+            cmds::write_to_clip,
+            cmds::open_window,
+            cmds::print,
+            cmds::escape_win
         ])
         .menu(tauri::Menu::os_default(&context.package_info().name))
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
-        .on_page_load(|window, _| {
-            println!("on page load");
-            set_window_position_and_size(&window);
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::Focused(focused) = event.event() {
+                if !focused {
+                    _ = cmds::escape_win();
+                }
+            }
         })
         .setup(move |app| setup::init(app))
         .build(context)
@@ -53,6 +59,7 @@ fn main() {
         }
         tauri::RunEvent::Exit => {
             println!("exit");
+            GLOBAL.lock().exit();
             app.exit(0);
         }
         _ => {}

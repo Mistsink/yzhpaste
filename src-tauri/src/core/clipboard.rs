@@ -10,6 +10,7 @@ use base64::{
 use chrono::Duration;
 use serde_json::json;
 use std::thread;
+use anyhow::Result;
 
 
 
@@ -38,6 +39,22 @@ pub async fn get_clipboard_data() -> Result<String, String> {
     .to_string();
 
     Ok(result)
+}
+pub struct ClipBoardOprator;
+
+impl ClipBoardOprator {
+    pub fn set_text(text: String) -> Result<()> {
+        let mut clipboard = Clipboard::new()?;
+        clipboard.set_text(text)?;
+        Ok(())
+    }
+
+    pub fn set_image(data: ImageDataDB) -> Result<()> {
+        let mut clipboard = Clipboard::new()?;
+        let img_data = img_util::base64_to_rgba8(&data.base64).unwrap();
+        clipboard.set_image(img_data)?;
+        Ok(())
+    }
 }
 
 pub struct ClipboardWatcher;
