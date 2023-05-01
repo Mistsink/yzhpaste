@@ -1,12 +1,19 @@
-use tauri::{AppHandle, Manager, State};
+use chrono::Local;
+use parking_lot::MutexGuard;
+use tauri::{AppHandle, Manager, State, Window};
 
 use crate::{
     core::{
         clipboard::{self, ClipBoardOprator},
-        database::{QueryReq, Record, SqliteDB, ImageDataDB},
+        database::{ImageDataDB, QueryReq, Record, SqliteDB},
         global::GLOBAL,
     },
-    utils::{dispatch_util, window_util::focus_window, json_util},
+    utils::{
+        dispatch_util::{self, sleep},
+        json_util,
+        visible::is_window_visible,
+        window_util::{focus_window, get_active_process_id},
+    },
     GAppHandle, PreviousProcessId,
 };
 
@@ -120,30 +127,43 @@ pub fn print(msg: String) -> CmdResult {
 
 #[tauri::command]
 pub fn escape_win() -> CmdResult {
-    let binding = GLOBAL.lock();
-    let (opt_win, is_new) = binding.get_window();
-    if let Some(window) = opt_win {
-        window.close().unwrap();
+    println!("[{}] in escape_win", Local::now());
+    {
+        let binding = GLOBAL.lock();
+        let (opt_win, _) = binding.get_window();
+        if let Some(window) = opt_win {
+            window.close().unwrap();
+        }
     }
+    _ = focus_previous_window();
+    println!("[{}] out escape_win", Local::now());
     Ok(())
 }
 
 #[tauri::command]
 pub fn open_window() -> CmdResult {
-    println!("in cmd open window");
+    println!("[{}] in open_window", Local::now());
+
     // GLOBAL.lock()
-    let binding = GLOBAL.lock();
-    let (opt_win, is_new) = binding.get_window();
+    let mut opt_win: Option<Window> = None;
+    let mut is_new = false;
+    {
+        let mut binding = GLOBAL.lock();
+        binding.set_pre_process_id(get_active_process_id());
+        (opt_win, is_new) = binding.get_window();
+    }
     // println!("{}", is_new);
     if let Some(window) = opt_win {
         if !is_new {
             if window.is_visible().unwrap() {
                 let _ = window.close();
+                println!("[{}] out open_window", Local::now());
                 return Ok(());
             }
             let _ = window.unminimize();
             _ = window.show();
             _ = window.set_focus();
+            println!("[{}] out open_window", Local::now());
             return Ok(());
         } else {
             let _ = window.show();
@@ -152,38 +172,68 @@ pub fn open_window() -> CmdResult {
     } else {
         println!("寄，没拿到 app handle");
     }
+    println!("[{}] out open_window", Local::now());
     Ok(())
 }
 
 #[tauri::command]
 pub fn write_to_clip(id: u64) -> bool {
+    println!("[{}] in write_to_clip", Local::now());
+
     let record = SqliteDB::new().find_by_id(id);
     match record {
         Ok(r) => {
+            println!("id:{} record:{:?}", id, r.content);
             if r.data_type == "text" {
                 let _ = ClipBoardOprator::set_text(r.content);
             } else if r.data_type == "image" {
                 let image_data: ImageDataDB = json_util::parse(&r.content).unwrap();
                 let _ = ClipBoardOprator::set_image(image_data);
             }
+
+            // sleep(2000);
+
+            println!("[{}] out write_to_clip", Local::now());
             true
         }
         Err(e) => {
-            println!("err:{}", e);
+            println!("write_to_clip Err:{}", e);
             false
         }
     }
 }
 
-// #[tauri::command]
-// pub fn focus_previous_window() -> CmdResult {
-//     focus_window(*PreviousProcessId.lock().unwrap());
-//     Ok(())
-// }
+#[tauri::command]
+pub fn focus_previous_window() -> CmdResult {
+    let mut pre_process_id = 0;
+    {
+        pre_process_id = GLOBAL.lock().get_pre_process_id();
+    }
+    focus_window(pre_process_id);
+    // focus_window(*PreviousProcessId.lock().unwrap());
+    Ok(())
+}
 
-// #[tauri::command]
-// pub fn paste_in_previous_window() -> CmdResult {
-//     focus_window(*PreviousProcessId.lock().unwrap());
-//     dispatch_util::paste();
-//     Ok(())
-// }
+#[tauri::command]
+pub fn paste_in_previous_window() -> CmdResult {
+    println!("[{}] in paste_in_previous_window", Local::now());
+
+    let mut pre_process_id;
+    {
+        pre_process_id = GLOBAL.lock().get_pre_process_id();
+    }
+    println!("get pre process id:{}", pre_process_id);
+
+    if pre_process_id == 0 {
+        println!("[{}] out paste_in_previous_window", Local::now());
+        return Ok(());
+    }
+
+    focus_window(pre_process_id);
+    sleep(100);
+    dispatch_util::paste();
+
+    println!("[{}] out paste_in_previous_window", Local::now());
+
+    Ok(())
+}

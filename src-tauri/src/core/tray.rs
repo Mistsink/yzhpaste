@@ -1,6 +1,6 @@
 use tauri::{
     AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-    SystemTrayMenuItem, SystemTraySubmenu,
+    SystemTrayMenuItem, SystemTraySubmenu, Window,
 };
 
 use super::global::GLOBAL;
@@ -19,8 +19,12 @@ pub fn menu() -> SystemTray {
 
 // 菜单事件
 pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
-    // 获取应用窗口 // TODO get window from GLOBAL
-    if let (Some(window), _) = GLOBAL.lock().get_window() {
+    // 获取应用窗口
+    let mut opt_window: Option<Window> = None;
+    {
+        (opt_window, _) = GLOBAL.lock().get_window()
+    }
+    if let Some(window) = opt_window {
         match event {
             // 左键点击
             SystemTrayEvent::LeftClick {

@@ -177,6 +177,31 @@ impl SqliteDB {
         Ok(())
     }
 
+    pub fn find_last(&self) -> Result<Vec<Record>> {
+        let sql = "SELECT id, content_preview, data_type, md5, active_time, pined, tags FROM record order by active_time desc limit 1";
+        let mut stmt = self.conn.prepare(sql)?;
+        let mut rows = stmt.query([])?;
+        let mut res = vec![];
+        if let Some(row) = rows.next()? {
+            let data_type: String = row.get(2)?;
+            let content: String = row.get(1)?;
+            let tags: String = row.get(6)?;
+            let r = Record {
+                id: row.get(0)?,
+                content,
+                content_preview: None,
+                data_type,
+                md5: row.get(3)?,
+                active_time: row.get(4)?,
+                pined: row.get(5)?,
+                content_highlight: None,
+                tags,
+            };
+            res.push(r);
+        }
+        Ok(res)
+    }
+
     pub fn find_all(&self) -> Result<Vec<Record>> {
         let sql = "SELECT id, content_preview, data_type, md5, active_time, pined, tags FROM record order by active_time desc";
         let mut stmt = self.conn.prepare(sql)?;

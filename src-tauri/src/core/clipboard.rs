@@ -69,8 +69,8 @@ impl ClipboardWatcher {
             let mut clipboard = Clipboard::new().unwrap();
             println!("start clipboard watcher");
             let mut cnt = 1;
-            loop {
 
+            let mut watch_fn = || {
                 // println!("before db new");
                 let db = database::SqliteDB::new();
                 // println!("after db new");
@@ -83,6 +83,7 @@ impl ClipboardWatcher {
                     let content_origin = text.clone();
                     let content = text.trim();
                     let md5 = string_util::md5(&content_origin);
+
                     if !content.is_empty() && md5 != last_content_md5 {
                         println!("===== new content: {}", content);
                         // 说明有新内容
@@ -112,6 +113,7 @@ impl ClipboardWatcher {
                 let _ = img.map(|img| {
                     let img_md5 = string_util::md5_by_bytes(&img.bytes);
                     if img_md5 != last_img_md5 {
+                        println!("===== new image: {} x {}", img.width, img.height);
                         // 有新图片产生
                         let base64 = img_util::rgba8_to_base64(&img);
                         let content_db = ImageDataDB {
@@ -150,6 +152,9 @@ impl ClipboardWatcher {
                     let _ = db.delete_over_limit(l as usize);
                 }
                 thread::sleep(Duration::milliseconds(wait_millis).to_std().unwrap());
+            };
+            loop {
+                watch_fn();
             }
         });
     }

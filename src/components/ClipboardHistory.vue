@@ -8,12 +8,6 @@ const records = ref<Record[]>([])
 
 onMounted(async () => {
   records.value = await cmd_find_all_records()
-  console.log(records.value)
-  window.data = records.value
-  window.HistoryCtnRef = HistoryCtnRef
-  window.currentFocusIndex = currentFocusIndex
-
-
   nextTick(() => {
     // 设置第一个li元素的焦点
     if (HistoryCtnRef.value) {

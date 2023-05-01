@@ -123,3 +123,7 @@ export const cmd_escape_win = async () => {
 export const cmd_write_to_clip = async (id: number) => {
   await invoke('write_to_clip', { id })
 }
+
+export const cmd_paste_in_previous_window = async () => {
+  await invoke('paste_in_previous_window')
+}

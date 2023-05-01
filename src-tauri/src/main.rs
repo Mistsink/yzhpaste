@@ -37,7 +37,8 @@ fn main() {
             cmds::write_to_clip,
             cmds::open_window,
             cmds::print,
-            cmds::escape_win
+            cmds::escape_win,
+            cmds::paste_in_previous_window
         ])
         .menu(tauri::Menu::os_default(&context.package_info().name))
         .system_tray(tray::menu())

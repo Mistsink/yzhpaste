@@ -1,12 +1,13 @@
-use std::{thread, time};
-
 use active_win_pos_rs::get_active_window;
 use bezier_rs::Bezier;
+use chrono::Local;
 use cocoa::appkit::{NSApplicationActivateIgnoringOtherApps, NSRunningApplication};
 use cocoa::base::nil;
+use std::{thread, time};
 use tauri::LogicalSize;
 use tauri::Window;
 use tauri::{AppHandle, LogicalPosition, WindowBuilder};
+
 fn slide_up(window: &Window) {
     let monitor = window.current_monitor().unwrap().expect("No monitor found");
     let monitor_size = monitor.size();
@@ -84,12 +85,20 @@ pub(crate) fn set_window_position_and_size(window: &Window) {
 }
 
 pub fn get_active_process_id() -> i32 {
+    println!("[{}] in get_active_process_id", Local::now());
+
     match get_active_window() {
         Ok(active_window) => {
+            println!("process_id: {}", active_window.process_id);
+            println!("process_name: {}", active_window.process_name);
+            println!("title: {}", active_window.title);
+            println!("window_id: {}", active_window.window_id);
             let process_id: i32 = active_window.process_id.try_into().unwrap();
+            println!("[{}] out get_active_process_id OK", Local::now());
             process_id
         }
         Err(()) => {
+            println!("[{}] out get_active_process_id Err", Local::now());
             println!("error occurred while getting the active window");
             0
         }
@@ -97,8 +106,24 @@ pub fn get_active_process_id() -> i32 {
 }
 
 pub fn focus_window(process_id: i32) {
+    println!("[{}] in focus_window", Local::now());
+
     if process_id == 0 {
+        println!("process_id is 0");
+        println!("[{}] out focus_window", Local::now());
         return;
+    }
+
+    #[cfg(target_os = "windows")]
+    unsafe {
+        let hwnd = winapi::um::winuser::FindWindowW(
+            std::ptr::null(),
+            process_id.to_string().as_ptr() as _,
+        );
+
+        if hwnd != std::ptr::null_mut() {
+            winapi::um::winuser::SetForegroundWindow(hwnd);
+        }
     }
     #[cfg(target_os = "macos")]
     unsafe {
@@ -106,4 +131,21 @@ pub fn focus_window(process_id: i32) {
             NSRunningApplication::runningApplicationWithProcessIdentifier(nil, process_id);
         current_app.activateWithOptions_(NSApplicationActivateIgnoringOtherApps);
     }
+
+    #[cfg(target_os = "linux")]
+    {
+        use std::process::Command;
+        let output = Command::new("wmctrl")
+            .arg("-a")
+            .arg(format!("pid,{}", process_id))
+            .output()
+            .expect("Failed to execute command");
+
+        if output.status.success() {
+            println!("Focused window successfully.");
+        } else {
+            println!("Failed to focus window.");
+        }
+    }
+    println!("[{}] out focus_window", Local::now());
 }

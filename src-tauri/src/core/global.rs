@@ -1,21 +1,36 @@
+use chrono::Local;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use tauri::{AppHandle, GlobalShortcutManager, Manager, Window};
 
-use crate::{cmds::open_window, utils::window_util::set_window_position_and_size};
+use crate::{
+    cmds::open_window,
+    utils::window_util::{get_active_process_id, set_window_position_and_size},
+};
 
 use super::shortcuts_manager::GShortcutManager;
 
 #[derive(Debug, Default, Clone)]
 pub struct Global {
-    app_handle: Option<AppHandle>
+    app_handle: Option<AppHandle>,
+    pre_process_id: i32,
 }
 
 impl Global {
     pub fn new() -> Self {
         Global {
-            app_handle: None
+            app_handle: None,
+            pre_process_id: 0,
         }
+    }
+
+    pub fn get_pre_process_id(&self) -> i32 {
+        return self.pre_process_id;
+    }
+
+    pub fn set_pre_process_id(&mut self, pid: i32) {
+        println!("set_pre_process_id: {}", pid);
+        self.pre_process_id = pid;
     }
 
     pub fn init(&mut self, app_handle: AppHandle) {
@@ -50,16 +65,21 @@ impl Global {
     }
 
     pub fn get_window(&self) -> (Option<Window>, bool) {
+        println!("[{}] in GLOBAL get_window", Local::now());
+
         let app = self.get_handle();
         if let Some(window) = app.get_window("main") {
+            println!("[{}] out GLOBAL get_window", Local::now());
             return (Some(window), false);
         }
 
         let new_window = self.new_window();
         if let Some(window) = new_window {
             println!("new window");
+            println!("[{}] out GLOBAL get_window", Local::now());
             return (Some(window), true);
         }
+        println!("[{}] out GLOBAL get_window", Local::now());
         return (None, false);
     }
 
