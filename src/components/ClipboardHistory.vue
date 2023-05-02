@@ -48,7 +48,7 @@ watch(currentFocusIndex, () => {
 });
 const scrollToSelectedItem = () => {
   const selectedItem = HistoryCtnRef.value.querySelector(`li:nth-child(${currentFocusIndex.value + 1})`)
-  useScrollToSelectedItem(HistoryCtnRef.value, selectedItem, 0.8)
+  useScrollToSelectedItem(HistoryCtnRef.value, selectedItem, 0.5)
 };
 
 const onKeyDown = (event: KeyboardEvent) => {

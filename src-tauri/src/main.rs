@@ -46,7 +46,7 @@ fn main() {
         .on_window_event(|event| {
             if let tauri::WindowEvent::Focused(focused) = event.event() {
                 if !focused {
-                    _ = cmds::escape_win();
+                    // _ = cmds::escape_win();
                 }
             }
         })
