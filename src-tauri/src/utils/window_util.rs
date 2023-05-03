@@ -4,28 +4,36 @@ use chrono::Local;
 use cocoa::appkit::{NSApplicationActivateIgnoringOtherApps, NSRunningApplication};
 use cocoa::base::nil;
 use std::{thread, time};
-use tauri::LogicalSize;
+use tauri::{LogicalSize, PhysicalPosition};
 use tauri::Window;
 use tauri::{AppHandle, LogicalPosition, WindowBuilder};
 
-fn slide_up(window: &Window) {
+pub fn slide_up(window: &Window) {
     let monitor = window.current_monitor().unwrap().expect("No monitor found");
     let monitor_size = monitor.size();
 
+    let win_y = window.outer_position().unwrap().y;
+    println!("inner_position {:?}", window.inner_position());
+    println!("outter_position {:?}", window.outer_position());
+    println!("inner_size {:?}", window.inner_size());
+    println!("win_y: {}", win_y);
+
     let duration = time::Duration::from_millis(20);
-    let start_y = monitor_size.height as f64;
-    let end_y = (monitor_size.height - 300) as f64; // 假设窗口高度为300
+    // let start_y = monitor_size.height as f64;
+    // let end_y = (monitor_size.height - 300) as f64; // 假设窗口高度为300
+    let start_y = win_y as f64;
+    let end_y = 0.0; // 假设窗口高度为300
 
     let bezier = Bezier::from_cubic_coordinates(0.0, start_y, 0.1, start_y, 0.9, end_y, 1.0, end_y);
 
     for t in (0..=100).map(|i| i as f64 / 100.0) {
         let position = bezier.evaluate(bezier_rs::TValue::Parametric(t));
-        _ = window.set_position(LogicalPosition::new(0, position.y as i32));
+        _ = window.set_position(PhysicalPosition::new(0, position.y as i32));
         thread::sleep(duration);
     }
 }
 
-fn slide_down(window: &Window) {
+pub fn slide_down(window: &Window) {
     let monitor = window.current_monitor().unwrap().expect("No monitor found");
     let monitor_size = monitor.size();
 
@@ -79,7 +87,7 @@ pub(crate) fn set_window_position_and_size(window: &Window) {
     let y = local_size.height - height;
 
     // println!("size {} {}", local_size.width, local_size.height);
-    // println!("x {} y {} width{} height{}", x, y, width, height);
+    println!("x {} y {} width{} height{}", x, y, width, height);
     _ = window.set_size(LogicalSize::new(width, height));
     _ = window.set_position(LogicalPosition::new(x, y));
 }

@@ -12,7 +12,7 @@ use crate::{
         dispatch_util::{self, sleep},
         json_util,
         visible::is_window_visible,
-        window_util::{focus_window, get_active_process_id},
+        window_util::{focus_window, get_active_process_id, slide_up},
     },
     GAppHandle, PreviousProcessId,
 };
@@ -132,6 +132,7 @@ pub fn escape_win() -> CmdResult {
         let binding = GLOBAL.lock();
         let (opt_win, _) = binding.get_window();
         if let Some(window) = opt_win {
+            // slide_up(&window);
             window.close().unwrap();
         }
     }
