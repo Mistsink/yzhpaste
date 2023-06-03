@@ -1,46 +1,36 @@
-# yzhpaste
+# yzhpaste - `云蒸 Paste`
 
-This template should help get you started developing with Vue 3 in Vite.
+旨在实现全平台剪切板增强工具
 
-## Recommended IDE Setup
+> 仿 MacOS 的 `Paste`
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
-
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
+## 命令
 
 ```sh
-pnpm install
+# 建议使用 pnpm 
+# npm install --global pnpm
+
+pnpm i
+
+pnpm tauri dev
+
+# 如 tauri 运行出现问题请参照 tauri 官网说明
+# tauri 前置环境: https://tauri.app/v1/guides/getting-started/prerequisites
 ```
 
-### Compile and Hot-Reload for Development
 
-```sh
-pnpm dev
+
+## 贡献代码
+
+请遵循常规多人协作规范，创建新的分支，保证测试无误后合入`main`支，或`fork`下来提交`pr`。
+
+同时使用`git`提交代码时请使用`pnpm cz`命令规范化提交信息。需要您熟悉安装`git-cz`工具，请自行搜索下载。
+
+```bash
+# 如完成代码编写后，需要 git add . && git commit -m'msg' 时
+# 直接使用 pnpm cz
+pnpm cz
 ```
 
-### Type-Check, Compile and Minify for Production
 
-```sh
-pnpm build
-```
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-pnpm lint
-```
