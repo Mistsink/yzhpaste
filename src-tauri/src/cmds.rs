@@ -3,11 +3,14 @@ use parking_lot::MutexGuard;
 use tauri::{AppHandle, Manager, State, Window};
 
 use crate::{
+    config,
+    config::{CfgHotkeys, CommonConfig, Config},
     core::{
         clipboard::{self, ClipBoardOprator},
         database::{ImageDataDB, QueryReq, Record, SqliteDB},
         global::GLOBAL,
     },
+    log_err,
     utils::{
         dispatch_util::{self, sleep},
         json_util,
@@ -19,6 +22,97 @@ use crate::{
 
 type CmdResult<T = ()> = Result<T, String>;
 
+// config 相关
+#[tauri::command]
+pub fn get_common_config() -> CmdResult<CommonConfig> {
+    Ok(Config::common().data().clone())
+}
+
+#[tauri::command]
+pub fn set_common_config(config: CommonConfig) -> CmdResult {
+    Config::common().draft().patch_config(config);
+    Config::common().apply();
+    log_err!(Config::common().data().save_file());
+
+    // todo enable_auto_launch
+    // todo hotkeys
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn change_language(language: String) -> CmdResult {
+    let _ = config::modify_common_config(CommonConfig {
+        language: Some(language),
+        ..CommonConfig::default()
+    })
+    .await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn change_record_limit(limit: u32) -> CmdResult {
+    let _ = config::modify_common_config(CommonConfig {
+        record_limit: Some(limit),
+        ..CommonConfig::default()
+    })
+    .await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn change_auto_launch(enable: bool) -> CmdResult {
+    let _ = config::modify_common_config(CommonConfig {
+        enable_auto_launch: Some(enable),
+        ..CommonConfig::default()
+    })
+    .await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn change_auto_paste(enable: bool) -> CmdResult {
+    if enable == true {
+        dispatch_util::request_permissions();
+    }
+    let _ = config::modify_common_config(CommonConfig {
+        enable_auto_paste: Some(enable),
+        ..CommonConfig::default()
+    })
+    .await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn change_delete_confirm(enable: bool) -> CmdResult {
+    let _ = config::modify_common_config(CommonConfig {
+        enable_delete_confirm: Some(enable),
+        ..CommonConfig::default()
+    })
+    .await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn change_theme_mode(theme_mode: String) -> CmdResult {
+    let _ = config::modify_common_config(CommonConfig {
+        theme_mode: Some(theme_mode),
+        ..CommonConfig::default()
+    })
+    .await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn change_hotkeys(hotkeys: CfgHotkeys) -> CmdResult {
+    let _ = config::modify_common_config(CommonConfig {
+        hotkeys: Some(hotkeys),
+        ..CommonConfig::default()
+    })
+    .await;
+    Ok(())
+}
+
+//  record 相关
 #[tauri::command]
 pub async fn get_clipboard_data() -> CmdResult<String> {
     clipboard::get_clipboard_data().await
@@ -192,8 +286,6 @@ pub fn write_to_clip(id: u64) -> bool {
                 let _ = ClipBoardOprator::set_image(image_data);
             }
 
-            // sleep(2000);
-
             println!("[{}] out write_to_clip", Local::now());
             true
         }
@@ -211,7 +303,6 @@ pub fn focus_previous_window() -> CmdResult {
         pre_process_id = GLOBAL.lock().get_pre_process_id();
     }
     focus_window(pre_process_id);
-    // focus_window(*PreviousProcessId.lock().unwrap());
     Ok(())
 }
 
@@ -231,7 +322,6 @@ pub fn paste_in_previous_window() -> CmdResult {
     }
 
     focus_window(pre_process_id);
-    sleep(100);
     dispatch_util::paste();
 
     println!("[{}] out paste_in_previous_window", Local::now());

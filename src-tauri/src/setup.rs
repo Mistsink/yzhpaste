@@ -2,7 +2,9 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     cmds::open_window,
-    core::{clipboard, database::SqliteDB, global::GLOBAL},
+    config::Config,
+    core::{clipboard, database::SqliteDB, global::GLOBAL, sysopt},
+    log_err,
     utils::{dispatch_util::request_permissions, window_util::get_active_process_id},
     GAppHandle,
 };
@@ -11,14 +13,16 @@ use window_vibrancy::{self, NSVisualEffectMaterial};
 
 pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("init");
+    log_err!(Config::init_config()); //  first
 
     {
         GLOBAL.lock().init(app.app_handle());
-        GLOBAL.lock().setup();
+        GLOBAL.lock().load_shortcut_manager();
         GLOBAL.lock().get_window();
     }
     SqliteDB::init();
     clipboard::ClipboardWatcher::start();
+    log_err!(sysopt::Sysopt::global().init_launch());
 
     init_window(app);
 

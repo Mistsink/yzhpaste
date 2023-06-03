@@ -1,9 +1,9 @@
 pub mod dirs;
+pub mod dispatch_util;
 pub mod hotkey_util;
 pub mod img_util;
 pub mod json_util;
 pub mod log_print;
 pub mod string_util;
-pub mod dispatch_util;
-pub mod window_util;
 pub mod visible;
+pub mod window_util;

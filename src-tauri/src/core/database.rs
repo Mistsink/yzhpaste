@@ -1,5 +1,5 @@
-use crate::utils::dirs::app_data_dir;
 use crate::utils::string_util;
+use crate::{config::Config, utils::dirs::app_data_dir};
 use anyhow::Result;
 use rusqlite::{ffi::SQLITE_OPEN_CREATE, Connection, OpenFlags};
 use serde::{Deserialize, Serialize};
@@ -47,13 +47,7 @@ const SQLITE_FILE: &str = "data.sqlite";
 #[allow(unused)]
 impl SqliteDB {
     pub fn new() -> Self {
-        // println!("new fn");
-        let dir_path = app_data_dir().unwrap();
-        let data_dir = dir_path.join(SQLITE_FILE);
-
-        if !Path::new(&dir_path).exists() {
-            fs::create_dir_all(&dir_path).unwrap();
-        }
+        let data_dir = app_data_dir().unwrap().join(SQLITE_FILE);
 
         let c = Connection::open_with_flags(
             &data_dir,
@@ -89,6 +83,10 @@ impl SqliteDB {
         );
         "#;
         c.execute(sql, ()).unwrap();
+
+        if let Some(days) = Config::common().latest().record_limit_days {
+            SqliteDB::new().delete_older_than_days(days as i64);
+        }
     }
 
     pub fn insert_record(&self, r: Record) -> Result<i64> {

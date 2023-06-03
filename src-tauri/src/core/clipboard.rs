@@ -1,4 +1,5 @@
 use super::database::{self, ImageDataDB};
+use crate::config::Config;
 use crate::core::database::Record;
 use crate::utils::{img_util, json_util, string_util};
 use arboard::Clipboard;
@@ -146,8 +147,7 @@ impl ClipboardWatcher {
                         last_img_md5 = img_md5;
                     }
                 });
-                // let limit = Config::common().latest().record_limit.clone();
-                let limit = Option::Some(10);
+                let limit = Config::common().latest().record_limit.clone();
                 if let Some(l) = limit {
                     let _ = db.delete_over_limit(l as usize);
                 }

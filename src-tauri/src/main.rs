@@ -7,6 +7,7 @@ mod cmds;
 mod core;
 mod setup;
 mod utils;
+mod config;
 
 use std::sync::Mutex;
 
@@ -23,6 +24,16 @@ fn main() {
     let app = tauri::Builder::default()
         .manage(GAppHandle(Mutex::new(None)))
         .invoke_handler(tauri::generate_handler![
+            // config
+            cmds::get_common_config,
+            cmds::set_common_config,
+            cmds::change_language,
+            cmds::change_record_limit,
+            cmds::change_auto_launch,
+            cmds::change_hotkeys,
+            cmds::change_delete_confirm,
+            cmds::change_theme_mode,
+            // record
             cmds::get_clipboard_data,
             cmds::clear_data,
             cmds::insert_record,
@@ -46,6 +57,7 @@ fn main() {
         .on_window_event(|event| {
             if let tauri::WindowEvent::Focused(focused) = event.event() {
                 if !focused {
+                    // FIXME in production env
                     // _ = cmds::escape_win();
                 }
             }

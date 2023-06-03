@@ -1,7 +1,7 @@
 use chrono::Local;
 use lazy_static::lazy_static;
 use parking_lot::Mutex;
-use tauri::{AppHandle, GlobalShortcutManager, Manager, Window};
+use tauri::{AppHandle, Manager, Window};
 
 use crate::{
     cmds::open_window,
@@ -83,8 +83,8 @@ impl Global {
         return (None, false);
     }
 
-    pub fn setup(&self) {
-        GShortcutManager.register_shortcut(self.get_handle(), || _ = open_window());
+    pub fn load_shortcut_manager(&self) {
+        GShortcutManager.load_cfg(self.get_handle());
     }
 
     pub fn exit(&self) {
