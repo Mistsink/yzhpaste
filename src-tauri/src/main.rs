@@ -4,16 +4,12 @@
 )]
 
 mod cmds;
+mod config;
 mod core;
 mod setup;
 mod utils;
-mod config;
-
-use std::sync::Mutex;
-
 use crate::core::{global::GLOBAL, tray};
-use tauri::Manager;
-use utils::window_util::set_window_position_and_size;
+use std::sync::Mutex;
 pub struct PreviousProcessId(Mutex<i32>);
 pub struct GAppHandle(Mutex<Option<tauri::AppHandle>>);
 
@@ -33,6 +29,7 @@ fn main() {
             cmds::change_hotkeys,
             cmds::change_delete_confirm,
             cmds::change_theme_mode,
+            cmds::change_auto_paste,
             // record
             cmds::get_clipboard_data,
             cmds::clear_data,

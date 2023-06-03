@@ -3,10 +3,7 @@ use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use tauri::{AppHandle, Manager, Window};
 
-use crate::{
-    cmds::open_window,
-    utils::window_util::{get_active_process_id, set_window_position_and_size},
-};
+use crate::utils::window_util::set_window_position_and_size;
 
 use super::shortcuts_manager::GShortcutManager;
 

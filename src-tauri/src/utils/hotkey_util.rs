@@ -1,6 +1,7 @@
 /// keyCode to keyName
 /// @param {Number} keyCode
 /// @return {String} keyName
+#[allow(unused)]
 fn key_code_to_name(key_code: u32) -> String {
     match key_code {
         8 => "backspace",
@@ -52,6 +53,7 @@ fn key_code_to_name(key_code: u32) -> String {
     .to_string()
 }
 
+#[allow(unused)]
 fn modifier_code_to_name(modifier_code: u32) -> String {
     match modifier_code {
         16 => "shift",
@@ -63,6 +65,7 @@ fn modifier_code_to_name(modifier_code: u32) -> String {
     .to_string()
 }
 
+#[allow(unused)]
 pub fn get_short_cut_name(key_code_arr: Vec<u32>, is_first_word_upper_case: bool) -> String {
     let mut key_str = String::new();
     let mut modifier = String::new();
@@ -94,6 +97,7 @@ pub fn get_short_cut_name(key_code_arr: Vec<u32>, is_first_word_upper_case: bool
     modifier + &key_str + &normal_key
 }
 
+#[allow(unused)]
 fn capitalized(name: &str, is_first_word_upper_case: bool) -> String {
     let name = name.to_lowercase();
     if !is_first_word_upper_case {

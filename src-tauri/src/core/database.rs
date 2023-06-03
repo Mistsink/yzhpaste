@@ -1,10 +1,10 @@
 use crate::utils::string_util;
 use crate::{config::Config, utils::dirs::app_data_dir};
 use anyhow::Result;
-use rusqlite::{ffi::SQLITE_OPEN_CREATE, Connection, OpenFlags};
+use rusqlite::{Connection, OpenFlags};
 use serde::{Deserialize, Serialize};
 use std::{
-    fs::{self, File},
+    fs::{self},
     path::Path,
 };
 

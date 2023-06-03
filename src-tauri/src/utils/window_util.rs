@@ -4,10 +4,11 @@ use chrono::Local;
 use cocoa::appkit::{NSApplicationActivateIgnoringOtherApps, NSRunningApplication};
 use cocoa::base::nil;
 use std::{thread, time};
-use tauri::{LogicalSize, PhysicalPosition};
+use tauri::LogicalPosition;
 use tauri::Window;
-use tauri::{AppHandle, LogicalPosition, WindowBuilder};
+use tauri::{LogicalSize, PhysicalPosition};
 
+#[allow(unused)]
 pub fn slide_up(window: &Window) {
     let monitor = window.current_monitor().unwrap().expect("No monitor found");
     let monitor_size = monitor.size();
@@ -33,6 +34,7 @@ pub fn slide_up(window: &Window) {
     }
 }
 
+#[allow(unused)]
 pub fn slide_down(window: &Window) {
     let monitor = window.current_monitor().unwrap().expect("No monitor found");
     let monitor_size = monitor.size();
@@ -66,6 +68,7 @@ fn get_logical_resolution(window: &Window) -> LogicalSize<u32> {
     LogicalSize::new(logical_width, logical_height)
 }
 
+#[allow(unused)]
 pub fn get_window_position_and_size(window: &Window) -> (LogicalPosition<u32>, LogicalSize<u32>) {
     let local_size = get_logical_resolution(window);
 

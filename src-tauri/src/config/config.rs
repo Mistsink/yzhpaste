@@ -56,11 +56,8 @@ pub async fn modify_common_config(patch: CommonConfig) -> Result<()> {
     Config::common().draft().patch_config(patch.clone());
 
     let auto_launch = patch.enable_auto_launch;
-    let auto_paste = patch.enable_auto_paste;
-    let delete_confirm = patch.enable_delete_confirm;
     let language = patch.language;
     let theme_mode = patch.theme_mode;
-    let record_limit = patch.record_limit;
     let hotkeys = patch.hotkeys;
 
     match {
@@ -68,12 +65,16 @@ pub async fn modify_common_config(patch: CommonConfig) -> Result<()> {
             sysopt::Sysopt::global().update_launch()?;
         }
 
-        if hotkeys.is_some() {
-            GLOBAL.lock().load_shortcut_manager();
+        if language.is_some() {
+            // TODO
         }
 
         if theme_mode.is_some() {
             // todo send msg to frontend
+        }
+
+        if hotkeys.is_some() {
+            GLOBAL.lock().load_shortcut_manager();
         }
 
         <Result<()>>::Ok(())

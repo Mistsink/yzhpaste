@@ -1,6 +1,6 @@
 use tauri::{AppHandle, GlobalShortcutManager};
 
-use crate::{cmds::open_window, config::Config, utils::hotkey_util};
+use crate::{cmds::open_window, config::Config};
 #[derive(Debug, Default, Clone)]
 pub struct GShortcutManager;
 impl GShortcutManager {
@@ -15,6 +15,7 @@ impl GShortcutManager {
             _ = manager.register(hotkeys.active.as_str(), || _ = open_window())
         }
     }
+    #[allow(unused)]
     pub fn register_shortcut(&self, app: &AppHandle, callback: impl Fn() + Send + 'static) {
         let mut manager = self.get_shortcuts_manager(app);
         _ = manager.register("CmdOrCtrl+Shift+C", move || {

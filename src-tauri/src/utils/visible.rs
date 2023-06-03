@@ -51,6 +51,7 @@ mod macos {
     use std::process::Command;
     use sysinfo::{Pid, ProcessExt, System, SystemExt};
 
+    #[allow(unused)]
     pub fn is_window_visible(process_id: u32) -> Option<bool> {
         let sys = System::new_all();
         let process = sys.processes().get(&Pid::from(process_id as usize))?;
@@ -118,6 +119,7 @@ mod linux {
     }
 }
 
+#[allow(unused)]
 pub fn is_window_visible(process_id: u32) -> Option<bool> {
     println!("[{}] in is_window_visible", Local::now());
     #[cfg(target_os = "windows")]

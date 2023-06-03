@@ -1,7 +1,3 @@
-use chrono::Local;
-use parking_lot::MutexGuard;
-use tauri::{AppHandle, Manager, State, Window};
-
 use crate::{
     config,
     config::{CfgHotkeys, CommonConfig, Config},
@@ -12,13 +8,11 @@ use crate::{
     },
     log_err,
     utils::{
-        dispatch_util::{self, sleep},
-        json_util,
-        visible::is_window_visible,
-        window_util::{focus_window, get_active_process_id, slide_up},
+        dispatch_util, json_util,
+        window_util::{focus_window, get_active_process_id},
     },
-    GAppHandle, PreviousProcessId,
 };
+use chrono::Local;
 
 type CmdResult<T = ()> = Result<T, String>;
 
@@ -240,13 +234,13 @@ pub fn open_window() -> CmdResult {
     println!("[{}] in open_window", Local::now());
 
     // GLOBAL.lock()
-    let mut opt_win: Option<Window> = None;
-    let mut is_new = false;
-    {
-        let mut binding = GLOBAL.lock();
-        binding.set_pre_process_id(get_active_process_id());
-        (opt_win, is_new) = binding.get_window();
-    }
+    // let mut opt_win: Option<Window> = None;
+    // let mut is_new = false;
+    // {
+    let mut binding = GLOBAL.lock();
+    binding.set_pre_process_id(get_active_process_id());
+    let (opt_win, is_new) = binding.get_window();
+    // }
     // println!("{}", is_new);
     if let Some(window) = opt_win {
         if !is_new {
@@ -298,10 +292,10 @@ pub fn write_to_clip(id: u64) -> bool {
 
 #[tauri::command]
 pub fn focus_previous_window() -> CmdResult {
-    let mut pre_process_id = 0;
-    {
-        pre_process_id = GLOBAL.lock().get_pre_process_id();
-    }
+    // let mut pre_process_id = 0;
+    // {
+    let pre_process_id = GLOBAL.lock().get_pre_process_id();
+    // }
     focus_window(pre_process_id);
     Ok(())
 }
@@ -310,10 +304,10 @@ pub fn focus_previous_window() -> CmdResult {
 pub fn paste_in_previous_window() -> CmdResult {
     println!("[{}] in paste_in_previous_window", Local::now());
 
-    let mut pre_process_id;
-    {
-        pre_process_id = GLOBAL.lock().get_pre_process_id();
-    }
+    // let mut pre_process_id;
+    // {
+    let pre_process_id = GLOBAL.lock().get_pre_process_id();
+    // }
     println!("get pre process id:{}", pre_process_id);
 
     if pre_process_id == 0 {

@@ -1,14 +1,10 @@
-use std::sync::{Arc, Mutex};
-
 use crate::{
-    cmds::open_window,
     config::Config,
     core::{clipboard, database::SqliteDB, global::GLOBAL, sysopt},
     log_err,
     utils::{dispatch_util::request_permissions, window_util::get_active_process_id},
-    GAppHandle,
 };
-use tauri::{window, App, AppHandle, Manager, State, StateManager, Window};
+use tauri::{App, Manager, Window};
 use window_vibrancy::{self, NSVisualEffectMaterial};
 
 pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>> {
