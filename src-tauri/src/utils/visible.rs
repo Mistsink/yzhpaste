@@ -2,14 +2,14 @@ use chrono::Local;
 
 #[cfg(target_os = "windows")]
 mod windows {
+    use std::ffi::OsStr;
+    use std::os::windows::ffi::OsStrExt;
     use std::os::windows::io::AsRawHandle;
     use sysinfo::{Pid, ProcessExt, System, SystemExt};
     use winapi::shared::minwindef::FALSE;
     use winapi::shared::windef::HWND;
     use winapi::um::dwmapi::DwmGetWindowAttribute;
     use winapi::um::winuser::{FindWindowExW, GetWindowTextW};
-    use std::os::windows::ffi::OsStrExt;
-    use std::ffi::OsStr;
 
     const DWMWA_CLOAKED: u32 = 14;
 

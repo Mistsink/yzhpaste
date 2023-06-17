@@ -247,13 +247,13 @@ pub fn open_window() -> CmdResult {
         if !is_new {
             if window.is_visible().unwrap() {
                 let _ = window.close();
-                println!("[{}] out open_window", Local::now());
+                println!("[{}] out open_window [older visible]", Local::now());
                 return Ok(());
             }
             let _ = window.unminimize();
             _ = window.show();
             _ = window.set_focus();
-            println!("[{}] out open_window", Local::now());
+            println!("[{}] out open_window [older no visible]", Local::now());
             return Ok(());
         } else {
             let _ = window.show();
@@ -262,7 +262,7 @@ pub fn open_window() -> CmdResult {
     } else {
         println!("寄，没拿到 app handle");
     }
-    println!("[{}] out open_window", Local::now());
+    println!("[{}] out open_window [new]", Local::now());
     Ok(())
 }
 

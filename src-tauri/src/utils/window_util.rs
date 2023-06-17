@@ -68,39 +68,76 @@ fn get_logical_resolution(window: &Window) -> LogicalSize<u32> {
 
 #[allow(unused)]
 pub fn get_window_position_and_size(window: &Window) -> (LogicalPosition<u32>, LogicalSize<u32>) {
-    let local_size = get_logical_resolution(window);
+    let logical_size = get_logical_resolution(window);
 
-    let width = local_size.width;
-    let height = (local_size.height as f32 * (2.0 / 5.0)).round() as u32;
+    let width = logical_size.width;
+    let height = (logical_size.height as f32 * (2.0 / 5.0)).round() as u32;
     let x = 0;
-    let y = local_size.height - height;
+    let y = logical_size.height - height;
     (LogicalPosition::new(x, y), LogicalSize::new(width, height))
 }
 
 pub(crate) fn set_window_position_and_size(window: &Window) {
     // window.set_always_on_top(true);
 
-    let local_size = get_logical_resolution(window);
+    let logical_size = get_logical_resolution(window);
 
-    let width = local_size.width;
-    let height = (local_size.height as f32 * (2.0 / 5.0)).round() as u32;
+    let width = logical_size.width;
+    let mut height = (logical_size.height as f32 * (2.0 / 5.0)).round() as u32;
     let x = 0;
-    let y = local_size.height - height;
+    let y = logical_size.height - height;
 
-    // println!("size {} {}", local_size.width, local_size.height);
-    println!("x {} y {} width{} height{}", x, y, width, height);
+    #[cfg(target_os = "windows")]
+    windows::get_taskbar_info().map(|(taskbar_height, visible)| {
+        if visible {
+            height = height - taskbar_height + 4;
+        }
+    });
+
+    // println!("size {} {}", logical_size.width, logical_size.height);
+    // println!("x {} y {} width{} height{}", x, y, width, height);
     _ = window.set_size(LogicalSize::new(width, height));
     _ = window.set_position(LogicalPosition::new(x, y));
 }
 
 #[cfg(target_os = "windows")]
-mod windows{
+mod windows {
     use std::ffi::OsStr;
-    use std::os::windows::ffi::OsStringExt;
-    use winapi::shared::windef::HWND;
-    use winapi::um::winuser::{GetWindowTextW, GetClassNameW, GetForegroundWindow, FindWindowW};
     use std::os::windows::ffi::OsStrExt;
-        
+    use winapi::shared::windef::{HWND, RECT};
+    use winapi::um::winuser::{
+        FindWindowW, GetClassNameW, GetWindowRect, GetWindowTextW, IsWindowVisible,
+    };
+
+    pub fn get_taskbar_info() -> Option<(u32, bool)> {
+        let mut taskbar: HWND;
+        let mut rect = RECT {
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+        };
+
+        unsafe {
+            let shell_tray_wnd: Vec<u16> = OsStr::new("Shell_TrayWnd")
+                .encode_wide()
+                .chain(Some(0))
+                .collect();
+            taskbar = FindWindowW(shell_tray_wnd.as_ptr(), std::ptr::null());
+            if taskbar.is_null() {
+                return None;
+            }
+
+            GetWindowRect(taskbar, &mut rect);
+        }
+
+        // physical size
+        let height = (rect.bottom - rect.top) as u32;
+        let visible = unsafe { IsWindowVisible(taskbar) } != 0;
+
+        Some((height, visible))
+    }
+
     pub fn get_window_text(hwnd: HWND) -> Result<String, &'static str> {
         let mut buffer = [0u16; 1024]; // 缓冲区用于存储窗口文本
         let len = unsafe { GetWindowTextW(hwnd, buffer.as_mut_ptr(), buffer.len() as i32) };
@@ -111,7 +148,7 @@ mod windows{
             .map_err(|_| "Failed to convert window text to UTF-16")?;
         Ok(text)
     }
-    
+
     pub fn get_class_name(hwnd: HWND) -> Result<String, &'static str> {
         let mut buffer = [0u16; 256]; // 缓冲区用于存储窗口类名
         let len = unsafe { GetClassNameW(hwnd, buffer.as_mut_ptr(), buffer.len() as i32) };
@@ -123,12 +160,21 @@ mod windows{
         Ok(class_name)
     }
 
-    pub fn get_hwnd_from_class_and_title(class_name: &str, window_name: &str) -> Result<HWND, &'static str> {
-        let class_name: Vec<u16> = OsStr::new(class_name).encode_wide().chain(Some(0)).collect();
-        let window_name: Vec<u16> = OsStr::new(window_name).encode_wide().chain(Some(0)).collect();
-    
+    pub fn get_hwnd_from_class_and_title(
+        class_name: &str,
+        window_name: &str,
+    ) -> Result<HWND, &'static str> {
+        let class_name: Vec<u16> = OsStr::new(class_name)
+            .encode_wide()
+            .chain(Some(0))
+            .collect();
+        let window_name: Vec<u16> = OsStr::new(window_name)
+            .encode_wide()
+            .chain(Some(0))
+            .collect();
+
         let hwnd = unsafe { FindWindowW(class_name.as_ptr(), window_name.as_ptr()) };
-    
+
         if hwnd.is_null() {
             Err("Could not find window")
         } else {
@@ -150,10 +196,6 @@ pub fn get_active_process_info() -> ProcessInfo {
 
     match get_active_window() {
         Ok(active_window) => {
-            println!("process_id:   {}", active_window.process_id);
-            println!("process_name: {}", active_window.process_name);
-            println!("title:        {}", active_window.title);
-            println!("window_id:    {}", active_window.window_id);
             let mut class_name = "".to_string();
             let mut window_text = "".to_string();
 
@@ -162,7 +204,7 @@ pub fn get_active_process_info() -> ProcessInfo {
                 use winapi::um::winuser::GetForegroundWindow;
                 let hwnd = GetForegroundWindow();
                 class_name = windows::get_class_name(hwnd).expect("Failed to get class name");
-                window_text = windows::get_window_text(hwnd).expect("Failed to get window text");
+                window_text = windows::get_window_text(hwnd).unwrap();
             }
 
             // active_window
@@ -194,14 +236,11 @@ pub fn focus_window(process_info: &ProcessInfo) {
 
     #[cfg(target_os = "windows")]
     unsafe {
-        use std::mem::MaybeUninit;
-        use std::os::windows::ffi::OsStringExt;
-        use std::ffi::OsString;
-
         let hwnd = windows::get_hwnd_from_class_and_title(
             &process_info.class_name_win,
             &process_info.window_text_win,
-            ).expect("Failed to get HWND");
+        )
+        .expect("Failed to get HWND");
 
         if hwnd != std::ptr::null_mut() {
             winapi::um::winuser::SetForegroundWindow(hwnd);
@@ -211,8 +250,10 @@ pub fn focus_window(process_info: &ProcessInfo) {
     unsafe {
         use cocoa::appkit::{NSApplicationActivateIgnoringOtherApps, NSRunningApplication};
         use cocoa::base::nil;
-        let current_app =
-            NSRunningApplication::runningApplicationWithProcessIdentifier(nil, process_info.process_id);
+        let current_app = NSRunningApplication::runningApplicationWithProcessIdentifier(
+            nil,
+            process_info.process_id,
+        );
         current_app.activateWithOptions_(NSApplicationActivateIgnoringOtherApps);
     }
 

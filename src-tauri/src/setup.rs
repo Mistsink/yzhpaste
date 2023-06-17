@@ -1,4 +1,5 @@
 use crate::{
+    cmds,
     config::Config,
     core::{clipboard, database::SqliteDB, global::GLOBAL, sysopt},
     log_err,
@@ -8,7 +9,6 @@ use tauri::{App, Manager, Window};
 use window_vibrancy::{self, NSVisualEffectMaterial};
 
 pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>> {
-    println!("init");
     log_err!(Config::init_config()); //  first
 
     {
@@ -28,7 +28,7 @@ pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>
 pub fn init_window(app: &mut App) {
     #[cfg(target_os = "macos")]
     app.set_activation_policy(tauri::ActivationPolicy::Accessory);
-    
+
     let opt_win: Option<Window>;
     {
         let mut binding = GLOBAL.lock();
@@ -47,7 +47,7 @@ pub fn init_window(app: &mut App) {
         window_vibrancy::apply_blur(&win, Some((18, 18, 18, 125)))
             .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
 
-        request_permissions();
         _ = win.show();
+        request_permissions();
     }
 }

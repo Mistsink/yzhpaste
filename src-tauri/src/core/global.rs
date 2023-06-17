@@ -55,6 +55,7 @@ impl Global {
         .transparent(true)
         .decorations(false)
         .skip_taskbar(true)
+        .focused(true)
         .build();
         if let Ok(window) = new_window {
             set_window_position_and_size(&window);

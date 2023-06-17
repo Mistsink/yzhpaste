@@ -2,6 +2,7 @@ use super::database::{self, ImageDataDB};
 use crate::config::Config;
 use crate::core::database::Record;
 use crate::utils::{img_util, json_util, string_util};
+use anyhow::Result;
 use arboard::Clipboard;
 use base64::{
     alphabet,
@@ -11,9 +12,6 @@ use base64::{
 use chrono::Duration;
 use serde_json::json;
 use std::thread;
-use anyhow::Result;
-
-
 
 pub async fn get_clipboard_data() -> Result<String, String> {
     const CUSTOM_ENGINE: engine::GeneralPurpose =
@@ -76,7 +74,7 @@ impl ClipboardWatcher {
                 let db = database::SqliteDB::new();
                 // println!("after db new");
                 let text = clipboard.get_text();
-                
+
                 // println!("!!!!!!!!! cnt: {} text: {:?}", cnt, text);
                 cnt = cnt + 1;
 

@@ -6,15 +6,18 @@
 mod cmds;
 mod config;
 mod core;
+use chrono::{DateTime, Duration, Local};
 mod setup;
 mod utils;
 use crate::core::{global::GLOBAL, tray};
-use std::sync::Mutex;
+use std::cell::Cell;
+use std::sync::{Arc, Mutex};
 pub struct PreviousProcessId(Mutex<i32>);
 pub struct GAppHandle(Mutex<Option<tauri::AppHandle>>);
 
 fn main() {
     // let g_app_handle = ;
+    let app_state = AppState::new();
 
     let context = tauri::generate_context!();
     let app = tauri::Builder::default()
@@ -51,11 +54,20 @@ fn main() {
         .menu(tauri::Menu::os_default(&context.package_info().name))
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
-        .on_window_event(|event| {
+        .on_window_event(move |event| {
+            let last_focus_time = Arc::clone(&app_state.last_focus_time);
             if let tauri::WindowEvent::Focused(focused) = event.event() {
-                if !focused {
-                    // FIXME in production env
-                    // _ = cmds::escape_win();
+                println!("window focused: {} [{}]", focused, Local::now());
+                if let Ok(mut last_focus_time) = last_focus_time.lock() {
+                    if *focused {
+                        *last_focus_time = Local::now();
+                    } else {
+                        let delta_duration = 100; // 毫秒
+                        let now = Local::now();
+                        if now - *last_focus_time > Duration::milliseconds(delta_duration) {
+                            _ = cmds::escape_win();
+                        }
+                    }
                 }
             }
         })
@@ -74,4 +86,16 @@ fn main() {
         }
         _ => {}
     })
+}
+
+struct AppState {
+    last_focus_time: Arc<Mutex<DateTime<Local>>>,
+}
+
+impl AppState {
+    fn new() -> Self {
+        Self {
+            last_focus_time: Arc::new(Mutex::new(Local::now())), // 初始为当前时间
+        }
+    }
 }
