@@ -11,6 +11,8 @@ pub fn app_home_dir() -> Result<PathBuf> {
     unsafe {
         use tauri::utils::platform::current_exe;
 
+        const PORTABLE_FLAG: bool = false;
+
         if !PORTABLE_FLAG {
             Ok(home_dir()
                 .ok_or(anyhow::anyhow!("failed to get app home dir"))?

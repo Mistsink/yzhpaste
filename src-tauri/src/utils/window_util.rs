@@ -1,8 +1,6 @@
 use active_win_pos_rs::get_active_window;
 use bezier_rs::Bezier;
 use chrono::Local;
-use cocoa::appkit::{NSApplicationActivateIgnoringOtherApps, NSRunningApplication};
-use cocoa::base::nil;
 use std::{thread, time};
 use tauri::LogicalPosition;
 use tauri::Window;
@@ -138,6 +136,8 @@ pub fn focus_window(process_id: i32) {
     }
     #[cfg(target_os = "macos")]
     unsafe {
+        use cocoa::appkit::{NSApplicationActivateIgnoringOtherApps, NSRunningApplication};
+        use cocoa::base::nil;
         let current_app =
             NSRunningApplication::runningApplicationWithProcessIdentifier(nil, process_id);
         current_app.activateWithOptions_(NSApplicationActivateIgnoringOtherApps);

@@ -26,7 +26,9 @@ pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>
 }
 
 pub fn init_window(app: &mut App) {
+    #[cfg(target_os = "macos")]
     app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+    
     let opt_win: Option<Window>;
     {
         let mut binding = GLOBAL.lock();

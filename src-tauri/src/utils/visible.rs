@@ -8,6 +8,8 @@ mod windows {
     use winapi::shared::windef::HWND;
     use winapi::um::dwmapi::DwmGetWindowAttribute;
     use winapi::um::winuser::{FindWindowExW, GetWindowTextW};
+    use std::os::windows::ffi::OsStrExt;
+    use std::ffi::OsStr;
 
     const DWMWA_CLOAKED: u32 = 14;
 
@@ -15,13 +17,23 @@ mod windows {
         let sys = System::new_all();
         let process = sys.processes().get(&Pid::from(process_id as usize))?;
 
+        let wide: Vec<u16> = OsStr::new(&process.name()).encode_wide().collect();
+
         // 获取窗口句柄
         let hwnd = unsafe {
+            // FindWindowExW(
+            //     // HWND::NULL,
+            //     // HWND::NULL,
+            //     std::ptr::null_mut(),
+            //     std::ptr::null_mut(),
+            //     std::ptr::null_mut(),
+            //     process.name().as_ptr(),
+            // )
             FindWindowExW(
-                HWND::NULL,
-                HWND::NULL,
                 std::ptr::null_mut(),
-                process.name().as_ptr(),
+                std::ptr::null_mut(),
+                std::ptr::null_mut(),
+                wide.as_ptr(),
             )
         };
 
@@ -37,7 +49,7 @@ mod windows {
                 )
             };
 
-            if result == 0 && is_cloaked == FALSE {
+            if result == 0 && is_cloaked == FALSE as u32 {
                 return Some(true);
             }
         }
