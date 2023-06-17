@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use parking_lot::Mutex;
 use tauri::{AppHandle, Manager, Window};
 
-use crate::utils::window_util::set_window_position_and_size;
+use crate::utils::window_util::{set_window_position_and_size, ProcessInfo};
 
 use super::shortcuts_manager::GShortcutManager;
 
@@ -11,6 +11,7 @@ use super::shortcuts_manager::GShortcutManager;
 pub struct Global {
     app_handle: Option<AppHandle>,
     pre_process_id: i32,
+    pre_process_info: ProcessInfo,
 }
 
 impl Global {
@@ -18,16 +19,17 @@ impl Global {
         Global {
             app_handle: None,
             pre_process_id: 0,
+            pre_process_info: ProcessInfo::default(),
         }
     }
 
-    pub fn get_pre_process_id(&self) -> i32 {
-        return self.pre_process_id;
+    pub fn get_pre_process_info(&self) -> ProcessInfo {
+        return self.pre_process_info.clone();
     }
 
-    pub fn set_pre_process_id(&mut self, pid: i32) {
-        println!("set_pre_process_id: {}", pid);
-        self.pre_process_id = pid;
+    pub fn set_pre_process_info(&mut self, info: ProcessInfo) {
+        println!("set_pre_process_info: {:?}", info);
+        self.pre_process_info = info;
     }
 
     pub fn init(&mut self, app_handle: AppHandle) {

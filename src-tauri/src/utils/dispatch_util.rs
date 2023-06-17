@@ -39,7 +39,7 @@ fn dispatch(event_type: &EventType) {
             println!("We could not dispatch {:?}", event_type);
         }
     }
-    println!("[{}] in dispatch after match", Local::now());
+    // println!("[{}] in dispatch after match", Local::now());
     // Let the OS catchup (at least MacOS)
     sleep(20); // 时间不能太短！！！不然系统反应不过来！！！
 }

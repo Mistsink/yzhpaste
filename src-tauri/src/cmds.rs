@@ -9,7 +9,7 @@ use crate::{
     log_err,
     utils::{
         dispatch_util, json_util,
-        window_util::{focus_window, get_active_process_id},
+        window_util::{focus_window, get_active_process_info, ProcessInfo},
     },
 };
 use chrono::Local;
@@ -238,7 +238,8 @@ pub fn open_window() -> CmdResult {
     // let mut is_new = false;
     // {
     let mut binding = GLOBAL.lock();
-    binding.set_pre_process_id(get_active_process_id());
+    binding.set_pre_process_info(get_active_process_info());
+
     let (opt_win, is_new) = binding.get_window();
     // }
     // println!("{}", is_new);
@@ -294,9 +295,9 @@ pub fn write_to_clip(id: u64) -> bool {
 pub fn focus_previous_window() -> CmdResult {
     // let mut pre_process_id = 0;
     // {
-    let pre_process_id = GLOBAL.lock().get_pre_process_id();
+    let pre_process_info = GLOBAL.lock().get_pre_process_info();
     // }
-    focus_window(pre_process_id);
+    focus_window(&pre_process_info);
     Ok(())
 }
 
@@ -306,16 +307,16 @@ pub fn paste_in_previous_window() -> CmdResult {
 
     // let mut pre_process_id;
     // {
-    let pre_process_id = GLOBAL.lock().get_pre_process_id();
+    let pre_process_info = GLOBAL.lock().get_pre_process_info();
     // }
-    println!("get pre process id:{}", pre_process_id);
+    println!("get pre process id:{}", pre_process_info.process_id);
 
-    if pre_process_id == 0 {
+    if pre_process_info.process_id == 0 {
         println!("[{}] out paste_in_previous_window", Local::now());
         return Ok(());
     }
 
-    focus_window(pre_process_id);
+    focus_window(&pre_process_info);
     dispatch_util::paste();
 
     println!("[{}] out paste_in_previous_window", Local::now());

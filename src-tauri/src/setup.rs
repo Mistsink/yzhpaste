@@ -2,7 +2,7 @@ use crate::{
     config::Config,
     core::{clipboard, database::SqliteDB, global::GLOBAL, sysopt},
     log_err,
-    utils::{dispatch_util::request_permissions, window_util::get_active_process_id},
+    utils::{dispatch_util::request_permissions, window_util::get_active_process_info},
 };
 use tauri::{App, Manager, Window};
 use window_vibrancy::{self, NSVisualEffectMaterial};
@@ -32,7 +32,7 @@ pub fn init_window(app: &mut App) {
     let opt_win: Option<Window>;
     {
         let mut binding = GLOBAL.lock();
-        binding.set_pre_process_id(get_active_process_id());
+        binding.set_pre_process_info(get_active_process_info());
         (opt_win, _) = binding.get_window();
     }
 

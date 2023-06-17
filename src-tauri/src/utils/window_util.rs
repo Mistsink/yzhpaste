@@ -93,31 +93,100 @@ pub(crate) fn set_window_position_and_size(window: &Window) {
     _ = window.set_position(LogicalPosition::new(x, y));
 }
 
-pub fn get_active_process_id() -> i32 {
-    println!("[{}] in get_active_process_id", Local::now());
-
-    match get_active_window() {
-        Ok(active_window) => {
-            println!("process_id: {}", active_window.process_id);
-            println!("process_name: {}", active_window.process_name);
-            println!("title: {}", active_window.title);
-            println!("window_id: {}", active_window.window_id);
-            let process_id: i32 = active_window.process_id.try_into().unwrap();
-            println!("[{}] out get_active_process_id OK", Local::now());
-            process_id
+#[cfg(target_os = "windows")]
+mod windows{
+    use std::ffi::OsStr;
+    use std::os::windows::ffi::OsStringExt;
+    use winapi::shared::windef::HWND;
+    use winapi::um::winuser::{GetWindowTextW, GetClassNameW, GetForegroundWindow, FindWindowW};
+    use std::os::windows::ffi::OsStrExt;
+        
+    pub fn get_window_text(hwnd: HWND) -> Result<String, &'static str> {
+        let mut buffer = [0u16; 1024]; // 缓冲区用于存储窗口文本
+        let len = unsafe { GetWindowTextW(hwnd, buffer.as_mut_ptr(), buffer.len() as i32) };
+        if len == 0 {
+            return Err("Failed to get window text");
         }
-        Err(()) => {
-            println!("[{}] out get_active_process_id Err", Local::now());
-            println!("error occurred while getting the active window");
-            0
+        let text = String::from_utf16(&buffer[..len as usize])
+            .map_err(|_| "Failed to convert window text to UTF-16")?;
+        Ok(text)
+    }
+    
+    pub fn get_class_name(hwnd: HWND) -> Result<String, &'static str> {
+        let mut buffer = [0u16; 256]; // 缓冲区用于存储窗口类名
+        let len = unsafe { GetClassNameW(hwnd, buffer.as_mut_ptr(), buffer.len() as i32) };
+        if len == 0 {
+            return Err("Failed to get window class name");
+        }
+        let class_name = String::from_utf16(&buffer[..len as usize])
+            .map_err(|_| "Failed to convert window class name to UTF-16")?;
+        Ok(class_name)
+    }
+
+    pub fn get_hwnd_from_class_and_title(class_name: &str, window_name: &str) -> Result<HWND, &'static str> {
+        let class_name: Vec<u16> = OsStr::new(class_name).encode_wide().chain(Some(0)).collect();
+        let window_name: Vec<u16> = OsStr::new(window_name).encode_wide().chain(Some(0)).collect();
+    
+        let hwnd = unsafe { FindWindowW(class_name.as_ptr(), window_name.as_ptr()) };
+    
+        if hwnd.is_null() {
+            Err("Could not find window")
+        } else {
+            Ok(hwnd)
         }
     }
 }
 
-pub fn focus_window(process_id: i32) {
+#[derive(Debug, Default, Clone)]
+pub struct ProcessInfo {
+    pub process_id: i32,
+    pub window_id: String,
+    pub class_name_win: String,
+    pub window_text_win: String,
+}
+
+pub fn get_active_process_info() -> ProcessInfo {
+    println!("[{}] in get_active_process_id", Local::now());
+
+    match get_active_window() {
+        Ok(active_window) => {
+            println!("process_id:   {}", active_window.process_id);
+            println!("process_name: {}", active_window.process_name);
+            println!("title:        {}", active_window.title);
+            println!("window_id:    {}", active_window.window_id);
+            let mut class_name = "".to_string();
+            let mut window_text = "".to_string();
+
+            #[cfg(target_os = "windows")]
+            unsafe {
+                use winapi::um::winuser::GetForegroundWindow;
+                let hwnd = GetForegroundWindow();
+                class_name = windows::get_class_name(hwnd).expect("Failed to get class name");
+                window_text = windows::get_window_text(hwnd).expect("Failed to get window text");
+            }
+
+            // active_window
+            let process_id: i32 = active_window.process_id.try_into().unwrap();
+            println!("[{}] out get_active_process_id OK", Local::now());
+            ProcessInfo {
+                process_id,
+                window_id: active_window.window_id,
+                class_name_win: class_name,
+                window_text_win: window_text,
+            }
+        }
+        Err(()) => {
+            println!("[{}] out get_active_process_id Err", Local::now());
+            println!("error occurred while getting the active window");
+            ProcessInfo::default()
+        }
+    }
+}
+
+pub fn focus_window(process_info: &ProcessInfo) {
     println!("[{}] in focus_window", Local::now());
 
-    if process_id == 0 {
+    if process_info.process_id == 0 {
         println!("process_id is 0");
         println!("[{}] out focus_window", Local::now());
         return;
@@ -125,10 +194,14 @@ pub fn focus_window(process_id: i32) {
 
     #[cfg(target_os = "windows")]
     unsafe {
-        let hwnd = winapi::um::winuser::FindWindowW(
-            std::ptr::null(),
-            process_id.to_string().as_ptr() as _,
-        );
+        use std::mem::MaybeUninit;
+        use std::os::windows::ffi::OsStringExt;
+        use std::ffi::OsString;
+
+        let hwnd = windows::get_hwnd_from_class_and_title(
+            &process_info.class_name_win,
+            &process_info.window_text_win,
+            ).expect("Failed to get HWND");
 
         if hwnd != std::ptr::null_mut() {
             winapi::um::winuser::SetForegroundWindow(hwnd);
@@ -139,7 +212,7 @@ pub fn focus_window(process_id: i32) {
         use cocoa::appkit::{NSApplicationActivateIgnoringOtherApps, NSRunningApplication};
         use cocoa::base::nil;
         let current_app =
-            NSRunningApplication::runningApplicationWithProcessIdentifier(nil, process_id);
+            NSRunningApplication::runningApplicationWithProcessIdentifier(nil, process_info.process_id);
         current_app.activateWithOptions_(NSApplicationActivateIgnoringOtherApps);
     }
 
@@ -148,7 +221,7 @@ pub fn focus_window(process_id: i32) {
         use std::process::Command;
         let output = Command::new("wmctrl")
             .arg("-a")
-            .arg(format!("pid,{}", process_id))
+            .arg(format!("pid,{}", process_info.process_id))
             .output()
             .expect("Failed to execute command");
 
