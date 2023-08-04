@@ -1,6 +1,7 @@
 use super::database::{self, ImageDataDB};
 use crate::config::Config;
 use crate::core::database::Record;
+use crate::events::on_records_update;
 use crate::utils::{img_util, json_util, string_util};
 use anyhow::Result;
 use arboard::Clipboard;
@@ -65,6 +66,7 @@ impl ClipboardWatcher {
             let wait_millis = 1000i64;
             let mut last_content_md5 = String::new();
             let mut last_img_md5 = String::new();
+            let mut last_md5 = String::new();
             let mut clipboard = Clipboard::new().unwrap();
             println!("start clipboard watcher");
             let mut cnt = 1;
@@ -83,11 +85,13 @@ impl ClipboardWatcher {
                     let content = text.trim();
                     let md5 = string_util::md5(&content_origin);
 
-                    if !content.is_empty() && md5 != last_content_md5 {
+                    if !content.is_empty() && md5 != last_md5 {
+                        // if !content.is_empty() && md5 != last_content_md5 {
                         println!("===== new content: {}", content);
                         // 说明有新内容
-                        let content_preview = if content.len() > 1000 {
-                            Some(content.chars().take(1000).collect())
+                        let limit_len = 999999;
+                        let content_preview = if content.len() > limit_len {
+                            Some(content.chars().take(limit_len).collect())
                         } else {
                             Some(content.to_string())
                         };
@@ -104,14 +108,18 @@ impl ClipboardWatcher {
                                 println!("insert record error: {}", e);
                             }
                         }
-                        last_content_md5 = md5;
+                        // last_content_md5 = md5;
+
+                        on_records_update();
+                        last_md5 = md5;
                     }
                 });
 
                 let img = clipboard.get_image();
                 let _ = img.map(|img| {
                     let img_md5 = string_util::md5_by_bytes(&img.bytes);
-                    if img_md5 != last_img_md5 {
+                    if img_md5 != last_md5 {
+                        // if img_md5 != last_img_md5 {
                         println!("===== new image: {} x {}", img.width, img.height);
                         // 有新图片产生
                         let base64 = img_util::rgba8_to_base64(&img);
@@ -142,7 +150,9 @@ impl ClipboardWatcher {
                                 println!("insert record error: {}", e);
                             }
                         }
-                        last_img_md5 = img_md5;
+                        // last_img_md5 = img_md5;
+                        on_records_update();
+                        last_md5 = img_md5;
                     }
                 });
                 let limit = Config::common().latest().record_limit.clone();

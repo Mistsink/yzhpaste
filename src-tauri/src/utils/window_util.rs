@@ -6,6 +6,8 @@ use tauri::LogicalPosition;
 use tauri::Window;
 use tauri::{LogicalSize, PhysicalPosition};
 
+use crate::cmds::print;
+
 #[allow(unused)]
 pub fn slide_up(window: &Window) {
     let monitor = window.current_monitor().unwrap().expect("No monitor found");
@@ -203,12 +205,28 @@ pub fn get_active_process_info() -> ProcessInfo {
             unsafe {
                 use winapi::um::winuser::GetForegroundWindow;
                 let hwnd = GetForegroundWindow();
-                class_name = windows::get_class_name(hwnd).expect("Failed to get class name");
-                window_text = windows::get_window_text(hwnd).unwrap();
+                class_name = match windows::get_class_name(hwnd) {
+                    Ok(class_name) => class_name,
+                    Err(_) => "".to_string(),
+                };
+                println!("class_name: {}", class_name);
+                window_text = match windows::get_window_text(hwnd) {
+                    Ok(text) => text,
+                    Err(_) => {
+                        // 获取窗口文本失败时，将 window_text 和 class_name 都设置为空字符串
+                        class_name = "".to_string();
+                        "".to_string()
+                    }
+                };
             }
 
             // active_window
-            let process_id: i32 = active_window.process_id.try_into().unwrap();
+            let process_id: i32 = if class_name.is_empty() && window_text.is_empty() {
+                0
+            } else {
+                active_window.process_id.try_into().unwrap()
+            };
+
             println!("[{}] out get_active_process_id OK", Local::now());
             ProcessInfo {
                 process_id,
@@ -236,14 +254,26 @@ pub fn focus_window(process_info: &ProcessInfo) {
 
     #[cfg(target_os = "windows")]
     unsafe {
-        let hwnd = windows::get_hwnd_from_class_and_title(
+        let hwnd_result = windows::get_hwnd_from_class_and_title(
             &process_info.class_name_win,
             &process_info.window_text_win,
-        )
-        .expect("Failed to get HWND");
+        );
 
-        if hwnd != std::ptr::null_mut() {
-            winapi::um::winuser::SetForegroundWindow(hwnd);
+        println!(
+            "name: {}\nwindow_text_win{}",
+            process_info.class_name_win, process_info.window_text_win
+        );
+
+        match hwnd_result {
+            Ok(hwnd) => {
+                if hwnd != std::ptr::null_mut() {
+                    winapi::um::winuser::SetForegroundWindow(hwnd);
+                }
+            }
+            Err(e) => {
+                // 在这里处理错误，你可以打印出错误信息，或者采取其他适合你应用程序的错误处理策略
+                eprintln!("Failed to get HWND: {:?}", e);
+            }
         }
     }
     #[cfg(target_os = "macos")]

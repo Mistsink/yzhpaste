@@ -22,14 +22,16 @@ const hideListener = async (event: KeyboardEvent) => {
   }
 }
 const handleBeforeUnload = (event: Event) => {
-  event.preventDefault()
+  // event.preventDefault()
 }
 
-export const useWindowSC = async () => {
+export const useWindowSC = () => {
+  console.log('useWindowSC')
   window.addEventListener('keydown', hideListener)
   window.addEventListener('beforeunload', handleBeforeUnload)
 }
-export const unuseWindowSC = async () => {
+export const unuseWindowSC = () => {
+  console.log('unuseWindowSC')
   window.removeEventListener('keydown', hideListener)
   window.removeEventListener('beforeunload', handleBeforeUnload)
 }

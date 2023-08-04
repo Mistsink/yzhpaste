@@ -6,6 +6,7 @@ use crate::{
         database::{ImageDataDB, QueryReq, Record, SqliteDB},
         global::GLOBAL,
     },
+    events::{on_window_hide_with_window, on_window_show_with_window},
     log_err,
     utils::{
         dispatch_util, json_util,
@@ -19,14 +20,18 @@ type CmdResult<T = ()> = Result<T, String>;
 // config 相关
 #[tauri::command]
 pub fn get_common_config() -> CmdResult<CommonConfig> {
+    println!("get_common_config");
+    println!("common config: {:?}", Config::common().data().clone());
     Ok(Config::common().data().clone())
 }
 
 #[tauri::command]
-pub fn set_common_config(config: CommonConfig) -> CmdResult {
-    Config::common().draft().patch_config(config);
-    Config::common().apply();
-    log_err!(Config::common().data().save_file());
+pub async fn set_common_config(config: CommonConfig) -> CmdResult {
+    // Config::common().draft().patch_config(config);
+    // Config::common().apply();
+    // log_err!(Config::common().data().save_file());
+
+    let _ = config::modify_common_config(config).await;
 
     // todo enable_auto_launch
     // todo hotkeys
@@ -47,6 +52,16 @@ pub async fn change_language(language: String) -> CmdResult {
 pub async fn change_record_limit(limit: u32) -> CmdResult {
     let _ = config::modify_common_config(CommonConfig {
         record_limit: Some(limit),
+        ..CommonConfig::default()
+    })
+    .await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn change_record_limit_days(days: u32) -> CmdResult {
+    let _ = config::modify_common_config(CommonConfig {
+        record_limit_days: Some(days),
         ..CommonConfig::default()
     })
     .await;
@@ -221,7 +236,9 @@ pub fn escape_win() -> CmdResult {
         let (opt_win, _) = binding.get_window();
         if let Some(window) = opt_win {
             // slide_up(&window);
-            window.close().unwrap();
+            // window.close().unwrap();
+            on_window_hide_with_window(&window);
+            window.hide().unwrap();
         }
     }
     _ = focus_previous_window();
@@ -246,17 +263,22 @@ pub fn open_window() -> CmdResult {
     if let Some(window) = opt_win {
         if !is_new {
             if window.is_visible().unwrap() {
-                let _ = window.close();
+                // let _ = window.close();
+                on_window_hide_with_window(&window);
+                let _ = window.hide();
+                // let _ = window.show();
                 println!("[{}] out open_window [older visible]", Local::now());
                 return Ok(());
             }
             let _ = window.unminimize();
             _ = window.show();
+            on_window_show_with_window(&window);
             _ = window.set_focus();
             println!("[{}] out open_window [older no visible]", Local::now());
             return Ok(());
         } else {
             let _ = window.show();
+            on_window_show_with_window(&window);
             _ = window.set_focus();
         }
     } else {
@@ -273,7 +295,7 @@ pub fn write_to_clip(id: u64) -> bool {
     let record = SqliteDB::new().find_by_id(id);
     match record {
         Ok(r) => {
-            println!("id:{} record:{:?}", id, r.content);
+            println!("id:{} record-type:{:?}", id, r.data_type);
             if r.data_type == "text" {
                 let _ = ClipBoardOprator::set_text(r.content);
             } else if r.data_type == "image" {

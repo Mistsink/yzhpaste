@@ -6,11 +6,12 @@
 mod cmds;
 mod config;
 mod core;
-use chrono::{DateTime, Duration, Local};
+mod events;
+use chrono::{DateTime, Local, Duration};
+use events::on_records_update;
 mod setup;
 mod utils;
 use crate::core::{global::GLOBAL, tray};
-use std::cell::Cell;
 use std::sync::{Arc, Mutex};
 pub struct PreviousProcessId(Mutex<i32>);
 pub struct GAppHandle(Mutex<Option<tauri::AppHandle>>);
@@ -85,7 +86,7 @@ fn main() {
             app.exit(0);
         }
         _ => {}
-    })
+    });
 }
 
 struct AppState {

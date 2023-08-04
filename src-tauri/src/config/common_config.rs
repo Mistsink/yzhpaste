@@ -80,6 +80,9 @@ impl CommonConfig {
         if let Some(record_limit) = other.record_limit {
             self.record_limit = Some(record_limit);
         }
+        if let Some(record_limit_days) = other.record_limit_days {
+            self.record_limit_days = Some(record_limit_days);
+        }
         if let Some(hotkeys) = other.hotkeys {
             self.hotkeys = Some(hotkeys);
         }
@@ -101,5 +104,6 @@ impl CommonConfig {
         patch!(enable_delete_confirm);
         patch!(hotkeys);
         patch!(record_limit);
+        patch!(record_limit_days)
     }
 }

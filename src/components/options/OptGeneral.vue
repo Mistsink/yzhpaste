@@ -1,27 +1,18 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch, watchEffect } from 'vue';
 import OptItem from './OptItem.vue';
-import { NSwitch, NSlider } from 'naive-ui'
+import { NSwitch, NSlider, NInputNumber } from 'naive-ui'
+import { config } from '@/stores/config'
+import { storeToRefs } from 'pinia';
+import type { CommonConfig } from '@/services/cmds';
 
-const general = ref({
-    autoStart: false,
-    directPaste: false,
-    pureText: false,
-    historyCapacityIdx: 1
-})
+// onMounted(() => {
+//     window.cfg = cfg
+// })
 
-const marks = {
-    0: '天',
-    20: '周',
-    40: '月',
-    60: '季',
-    80: '年',
-    100: '无限'
-}
-
-
-watch(() => ({ ...general.value }), (newConfig, oldConfig) => {
-    console.log(newConfig, oldConfig)
+watchEffect((onCleanUp) => {
+    console.log('[OptGeneral.vue] config changed', config.value)
+    console.log('onCleanUp: ', onCleanUp)
 })
 </script>
 <template>
@@ -33,22 +24,24 @@ watch(() => ({ ...general.value }), (newConfig, oldConfig) => {
     ">
         <OptItem title="启动">
             <div>
-                <NSwitch v-model:value="general.autoStart" />
-                开机自启动 YzhPaste - {{ general.autoStart }}
+                <NSwitch v-model:value="config.enable_auto_launch" />
+                开机自启动 YzhPaste - {{ config.enable_auto_launch }}
             </div>
         </OptItem>
         <OptItem title="集成">
             <div>
-                <NSwitch v-model:value="general.directPaste" />
-                []开启 Direct Paste - {{ general.directPaste }}
+                <NSwitch v-model:value="config.enable_auto_paste" />
+                [TODO] 开启 Auto Paste - {{ config.enable_auto_paste }}
             </div>
             <div>
-                <NSwitch v-model:value="general.pureText" />
-                []粘贴为纯文本 - {{ general.pureText }}
+                <NSwitch v-model:value="config.enable_delete_confirm" />
+                [TODO] 删除时需要确认 - {{ config.enable_delete_confirm }}
             </div>
         </OptItem>
-        <OptItem title="历史记录容量">
-            <NSlider class="w-full" v-model:value="general.historyCapacityIdx" :marks="marks" step="mark" :tooltip="false"/>
+        <OptItem title="历史记录时长(天)">
+            <!-- <NSlider class="w-full" v-model:value="cfg.record_limit_days" :marks="marks" step="mark" :tooltip="false"/> -->
+            <NInputNumber v-model:value="config.record_limit_days" ></NInputNumber>
+            
         </OptItem>
     </div>
 </template>

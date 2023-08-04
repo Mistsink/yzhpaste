@@ -68,12 +68,14 @@ impl Global {
         println!("[{}] in GLOBAL get_window", Local::now());
 
         let app = self.get_handle();
+        println!("get_window app");
         if let Some(window) = app.get_window("main") {
             println!("[{}] out GLOBAL get_window", Local::now());
             return (Some(window), false);
         }
 
         let new_window = self.new_window();
+        println!("get_window new_window");
         if let Some(window) = new_window {
             println!("new window");
             println!("[{}] out GLOBAL get_window", Local::now());

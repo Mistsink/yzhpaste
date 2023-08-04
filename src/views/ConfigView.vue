@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onBeforeMount, nextTick, onMounted } from 'vue';
 import OptGeneral from '../components/options/OptGeneral.vue'
 import OptHotkey from '../components/options/OptHotkey.vue'
 import OptSync from '../components/options/OptSync.vue'

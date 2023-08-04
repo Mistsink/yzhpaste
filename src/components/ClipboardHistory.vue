@@ -1,31 +1,39 @@
 <script setup lang="ts">
-import { nextTick, onBeforeMount, onMounted, ref, watch, watchEffect } from 'vue'
-import { type Record, cmd_find_all_records, cmd_print } from '../services/cmds'
+import { nextTick, onUnmounted, onMounted, onUpdated, ref, watch, watchEffect, onActivated, onDeactivated } from 'vue'
 import { useScrollToSelectedItem } from '@/utils/scroll'
 import { useEnterAndEsc } from '@/services/shortcuts'
+import { currentFocusIndex, records, setCurrentFocusIndex } from '@/stores/records'
 
-const records = ref<Record[]>([])
 
 onMounted(async () => {
-  records.value = await cmd_find_all_records()
-  nextTick(() => {
-    // 设置第一个li元素的焦点
-    if (HistoryCtnRef.value) {
-      const firstLi = HistoryCtnRef.value.querySelector('li:first-child')
-      if (firstLi) {
-        firstLi.focus()
-      }
-    }
-  })
+  console.log('ClipboardHistory mounted');
 
   window.addEventListener('keydown', onKeyDown)
   window.addEventListener('keyup', onEnter)
 })
 
-onBeforeMount(() => {
-  window.removeEventListener('keydown', onKeyDown)
-  window.removeEventListener('keyup', onEnter)
+onUnmounted(() => {
+  console.log('ClipboardHistory on unmounted');
+  console.log(window.removeEventListener('keydown', onKeyDown))
+  console.log(window.removeEventListener('keyup', onEnter))
 })
+
+// onActivated(() => {
+//   if (HistoryCtnRef.value) {
+//     // HistoryCtnRef.value.scrollLeft = scrollPosition.value
+//   }
+//   console.log('ClipboardHistory activated');
+//   window.addEventListener('keydown', onKeyDown)
+//   window.addEventListener('keyup', onEnter)
+// })
+
+// onDeactivated(() => {
+//   console.log('ClipboardHistory deactivated');
+//   window.removeEventListener('keydown', onKeyDown)
+//   window.removeEventListener('keyup', onEnter)
+// })
+
+
 
 //  for the li height
 const HistoryCtnRef = ref()
@@ -36,19 +44,16 @@ watchEffect(() => {
   }
 })
 
-const currentFocusIndex = ref(0)
-const setCurrentFocusIndex = (newIndex: number) => {
-  if (newIndex >= 0 && newIndex < records.value.length) {
-    currentFocusIndex.value = newIndex
-  }
-}
-
 watch(currentFocusIndex, () => {
   scrollToSelectedItem();
 });
+const scrollPosition = ref(0)
 const scrollToSelectedItem = () => {
   const selectedItem = HistoryCtnRef.value.querySelector(`li:nth-child(${currentFocusIndex.value + 1})`)
-  useScrollToSelectedItem(HistoryCtnRef.value, selectedItem, 0.5)
+  const scrollTo = useScrollToSelectedItem(HistoryCtnRef.value, selectedItem, 0.5)
+  if (scrollTo != -1) {
+    scrollPosition.value = scrollTo
+  }
 };
 
 const onKeyDown = (event: KeyboardEvent) => {
@@ -64,30 +69,23 @@ const onKeyDown = (event: KeyboardEvent) => {
 const onEnter = async (event: KeyboardEvent) => {
   if (event.key !== 'Enter') return
   const record = records.value[currentFocusIndex.value]
-  await cmd_print(JSON.stringify(record))
+  console.log('onEnter', record)
   await useEnterAndEsc(record.id)
 }
 
-const clickTimeout = ref<number>(-1)
 const onSingleClick = async (idx: number) => {
-  clearTimeout(clickTimeout.value);
-
-  clickTimeout.value = setTimeout(async () => {
-    await cmd_print("Single click");
-    setCurrentFocusIndex(idx)
-  }, 250);
+  setCurrentFocusIndex(idx)
 }
 const onDoubleClick = async (idx: number) => {
-  clearTimeout(clickTimeout.value);
   setCurrentFocusIndex(idx)
   const record = records.value[currentFocusIndex.value]
-  await cmd_print(JSON.stringify(record))
   await useEnterAndEsc(record.id)
 }
 </script>
 
 <template>
-  <div class="bg-slate-500 w-full h-full 
+  <div class="w-full h-full
+  content-container
   flex justify-center items-center">
     <p v-if="records.length === 0" class="text-4xl">No clipboard history available.</p>
     <ul ref="HistoryCtnRef" v-else class="flex flex-row 
@@ -99,31 +97,36 @@ const onDoubleClick = async (idx: number) => {
       <li v-for="(item, index) in records" :key="index" @click="() => onSingleClick(index)"
         @dblclick="() => onDoubleClick(index)" class="
       overflow-hidden
-      rounded-md
+      rounded-lg
       flex-none
       inline-flex
       justify-between
-    odd:bg-green-200 even:bg-orange-200
       w-full h-full flex-col
-      " :class="{ 'outline outline-blue-500': index === currentFocusIndex }">
-        <p class="flex-none underline bg-red-300 roundedt-md">{{ index + 1 }}</p>
-        <p v-if="item.data_type === 'text'" class="flex-auto 
-        pl-4 pr-4
-          bg-sky-200  
-        break-words 
+      " :class="index === currentFocusIndex ? 'active-item' : ''">
+        <p class="flex-none item-title">{{ item.data_type.toUpperCase() }}</p>
+        <p v-if="item.data_type === 'text'" class="
+          item-content
+          flex-auto 
+          px-4 py-1
+          break-words 
           whitespace-pre-wrap
           tracking-wide
           overflow-hidden
           ">{{ item.content }}</p>
-        <img v-else :src="`data:image/jpeg;base64,${item.content.base64}`" />
+        <img v-else :src="`data:image/jpeg;base64,${item.content.base64}`"
+        class="
+          img-container
+          p-4
+          "
+        />
         <div class="flex-none
-          bg-yellow-200
           flex
           justify-center
           items-center
           shadow-top
+          item-footer
         ">
-          {{ item.data_type === 'text' ? `${item.content.length}个字符` : `${item.content.width} x ${item.content.height} 像素`
+          {{ item.data_type === 'text' ? `${item.content.length} 字符` : `${item.content.width} x ${item.content.height} 像素`
           }}
         </div>
       </li>
@@ -144,7 +147,7 @@ li {
 }
 
 .shadow-top {
-  box-shadow: 0 -10px 20px rgba(254, 240, 138, 0.9);
+  box-shadow: 0 -10px 20px rgba(29, 38, 35, 0.9);
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -154,5 +157,64 @@ li {
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.content-container {
+  background-color: rgb(25, 28, 27);
+}
+
+.active-item {
+  outline-width: 0.23rem;
+  outline-style: solid;
+  /* outline-color: rgb(15, 103, 200); */
+  outline-color: rgb(96, 219, 184);
+  outline-offset: 0.08rem;
+}
+.unactive-item {
+  outline-width: 0.23rem;
+  outline-style: solid;
+  /* outline-color: rgb(15, 103, 200); */
+  outline-color: rgb(225,227,224);
+  outline-offset: 0.08rem;
+}
+
+.item-title {
+  font-size: 1.2rem;
+  padding-left: 1.25rem;
+  /* background-color: rgb(115,162,115); */
+  background-color: rgb(40, 75, 94);
+  color: rgb(196, 231, 255);
+  @apply leading-10
+}
+
+.item-content {
+  color: rgb(225, 227, 224);
+  background-color: rgb(29, 38, 35);
+}
+.img-container {
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;  
+  max-height: 100%;
+  object-fit: contain;
+  background-color: rgb(29, 38, 35);
+}
+.img-container img {
+  max-width: 100%;  
+  max-height: 100%;
+  width: auto;      
+  height: auto;    
+  object-fit: contain;
+}
+
+
+.item-footer {
+  font-size: 0.88rem;
+  color: rgba(225, 227, 224, 0.7);
+  background-color: rgb(29, 38, 35);
+  padding: 0.15rem 0;
 }
 </style>

@@ -2,7 +2,7 @@ export const useScrollToSelectedItem = (
   scrollContainer: HTMLElement,
   selectedItem: HTMLElement,
   eta: number = 1
-) => {
+): number => {
   const containerRect = scrollContainer.getBoundingClientRect()
   const itemRect = selectedItem.getBoundingClientRect()
 
@@ -18,7 +18,7 @@ export const useScrollToSelectedItem = (
   } else if (itemRect.right > containerRect.right - delta) {
     scrollTo = scrollContainer.scrollLeft + (itemRect.right - containerRect.right) + delta
   } else {
-    return // 不需要滚动
+    return -1 // 不需要滚动
   }
 
   const duration = 300 // 动画持续时间（毫秒）
@@ -38,4 +38,6 @@ export const useScrollToSelectedItem = (
     }
   }
   window.requestAnimationFrame(step)
+
+  return scrollTo
 }

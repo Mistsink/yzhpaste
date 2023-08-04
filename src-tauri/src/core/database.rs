@@ -1,8 +1,10 @@
 use crate::utils::string_util;
 use crate::{config::Config, utils::dirs::app_data_dir};
 use anyhow::Result;
+use chrono::{DateTime, Duration, Local, NaiveDateTime, NaiveTime, TimeZone, Utc};
 use rusqlite::{Connection, OpenFlags};
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::{
     fs::{self},
     path::Path,
@@ -93,6 +95,7 @@ impl SqliteDB {
         let sql = "insert into record (content,md5,active_time,pined,data_type,content_preview) values (?1,?2,?3,?4,?5,?6)";
         let md5 = string_util::md5(r.content.as_str());
         let now = chrono::Local::now().timestamp_millis() as u64;
+        println!("insert_record: {}", now);
         let content_preview = r.content_preview.unwrap_or("".to_string());
         let res = self.conn.execute(
             sql,
@@ -124,6 +127,7 @@ impl SqliteDB {
         let sql = "update record set active_time = ?2 where id = ?1";
         // 获取当前毫秒级时间戳
         let now = chrono::Local::now().timestamp_millis() as u64;
+        println!("update_record_active_time: {}", now);
         self.conn.execute(sql, [&r.id, &now])?;
         Ok(())
     }
@@ -226,57 +230,60 @@ impl SqliteDB {
     }
 
     pub fn find_by_key(&self, req: QueryReq) -> Result<Vec<Record>> {
+        let image_keywords = vec!["img", "png", "image", "jpg", "jpeg"]
+            .into_iter()
+            .map(|k| k.to_string())
+            .collect::<HashSet<String>>();
+
+        let mut res: Vec<Record> = vec![];
+        let mut queries = vec![];
+        // // 基本查询
+        let mut base_query = "SELECT id, content_preview, md5, active_time, pined, data_type, tags FROM record WHERE 1=1".to_string();
+
         let mut sql: String = String::new();
-        sql.push_str(
-            "SELECT id, content_preview, md5, active_time, pined, data_type, tags FROM record where 1=1",
-        );
-        let mut limit: usize = 300;
-        let mut params: Vec<String> = vec![];
-        if let Some(l) = req.limit {
-            limit = l;
-        }
-        params.push(limit.to_string());
+        sql.push_str(&base_query);
+        let limit = req.limit.unwrap_or(300);
         if let Some(k) = &req.key {
-            params.push(format!("%{}%", k));
-            sql.push_str(
-                format!(" and data_type='text' and content like ?{}", params.len()).as_str(),
-            );
-        }
-        if let Some(is_fav) = req.pined {
-            let is_fav_int = if is_fav { 1 } else { 0 };
-            params.push(is_fav_int.to_string());
-            sql.push_str(format!(" and pined = ?{}", params.len()).as_str());
-        }
-        if let Some(tags) = req.tags {
-            for tag in tags.iter() {
-                params.push(format!("%{}%", tag));
-                sql.push_str(format!(" and tags like ?{}", params.len()).as_str());
+            // 普通查询
+            queries.push((
+                base_query.clone()
+                    + " AND data_type='text' AND content LIKE ? ORDER BY active_time DESC LIMIT ?",
+                vec![format!("%{}%", k), limit.to_string()],
+            ));
+
+            if image_keywords.contains(&k.to_lowercase()) {
+                // 图片查询
+                queries.push((
+                    base_query.clone() + " AND data_type='image' ORDER BY active_time DESC LIMIT ?",
+                    vec![limit.to_string()],
+                ));
             }
         }
-        let sql = format!("{} order by active_time desc limit ?1", sql);
-        let mut stmt = self.conn.prepare(&sql)?;
-        let mut rows = stmt.query(rusqlite::params_from_iter(params))?;
-        let mut res = vec![];
-        while let Some(row) = rows.next()? {
-            let data_type: String = row.get(5)?;
-            let content: String = row.get(1)?;
-            let tags: String = row.get(6)?;
-            let content_highlight = req
-                .key
-                .as_ref()
-                .map(|key| string_util::highlight(key.as_str(), content.as_str()));
-            let r = Record {
-                id: row.get(0)?,
-                content,
-                content_preview: None,
-                data_type,
-                md5: row.get(2)?,
-                active_time: row.get(3)?,
-                pined: row.get(4)?,
-                content_highlight,
-                tags,
-            };
-            res.push(r);
+        for (sql, params) in queries {
+            let mut stmt = self.conn.prepare(&sql)?;
+            let mut rows = stmt.query(rusqlite::params_from_iter(params))?;
+
+            while let Some(row) = rows.next()? {
+                let data_type: String = row.get(5)?;
+                let content: String = row.get(1)?;
+                let tags: String = row.get(6)?;
+                let content_highlight = req
+                    .key
+                    .as_ref()
+                    .map(|key| string_util::highlight(key.as_str(), content.as_str()));
+                let r = Record {
+                    id: row.get(0)?,
+                    content,
+                    content_preview: None,
+                    data_type,
+                    md5: row.get(2)?,
+                    active_time: row.get(3)?,
+                    pined: row.get(4)?,
+                    content_highlight,
+                    tags,
+                };
+                res.push(r);
+            }
         }
         Ok(res)
     }
@@ -301,11 +308,25 @@ impl SqliteDB {
     pub fn delete_older_than_days(&self, days: i64) -> Result<bool> {
         let sql = "DELETE FROM record WHERE active_time < ?";
 
-        let days_ago =
-            (chrono::Local::now() - chrono::Duration::days(days)).timestamp_millis() as u64;
-        match self.conn.execute(sql, [days_ago]) {
+        let date = Local::now()
+            .checked_sub_signed(chrono::Duration::days(days-1))
+            .unwrap();
+
+        let timestamp_days_ago = DateTime::<Local>::from(date)
+            .date_naive()
+            .and_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
+            .and_local_timezone(date.timezone())
+            .unwrap()
+            .timestamp_millis() as u64;
+
+        println!("delete_older_than_days: {}", timestamp_days_ago);
+
+        match self.conn.execute(sql, [timestamp_days_ago]) {
             Ok(_) => Ok(true),
-            Err(_) => Ok(false),
+            Err(err) => {
+                println!("delete_older_than_days error: {}", err);
+                Ok(false)
+            },
         }
     }
 

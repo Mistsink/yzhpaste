@@ -24,10 +24,10 @@ const onClick = () => {
 
 <template>
     <div ref="selfRef" class="
-    h-8 mr-1 p-1
-    flex justify-center items-center
-    
-    " :class="isClicked ? 'active_tag' : 'unactive_tag'" @click="onClick">
+        option-button
+        mr-1 px-1
+        flex justify-center items-center
+    " @click="onClick">
         <button>OptionButton</button>
     </div>
     <ul v-if="isClicked" class="
@@ -50,6 +50,16 @@ const onClick = () => {
     </ul>
 </template>
 <style scoped>
+.option-button {
+  font-size: 0.8rem;
+  background-color: rgb(25,28,27);
+  color: rgb(225,227,224);
+  border-radius: 1.125rem;
+  @apply px-3 flex flex-row justify-center items-center space-x-2 leading-9 ease-in-out duration-300
+}
+.option-button:hover {
+    background-color: rgb(52,76,67);
+}
 .options-container {}
 
 .option-item {

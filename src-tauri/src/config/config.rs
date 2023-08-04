@@ -1,6 +1,6 @@
 use super::{CommonConfig, Draft};
 use crate::{
-    core::{global::GLOBAL, sysopt},
+    core::{global::GLOBAL, sysopt, database::SqliteDB},
     log_err,
     utils::{dirs, json_util},
 };
@@ -37,11 +37,11 @@ impl Config {
                 let _ = fs::create_dir_all(&app_dir);
             }
         }));
-        log_err!(dirs::app_data_img_dir().map(|app_dir| {
-            if !app_dir.exists() {
-                let _ = fs::create_dir_all(&app_dir);
-            }
-        }));
+        // log_err!(dirs::app_data_img_dir().map(|app_dir| {
+        //     if !app_dir.exists() {
+        //         let _ = fs::create_dir_all(&app_dir);
+        //     }
+        // }));
         log_err!(dirs::config_path().map(|path| {
             if !path.exists() {
                 log_err!(json_util::save(&path, &CommonConfig::template()));
@@ -59,6 +59,7 @@ pub async fn modify_common_config(patch: CommonConfig) -> Result<()> {
     let language = patch.language;
     let theme_mode = patch.theme_mode;
     let hotkeys = patch.hotkeys;
+    let record_limit_days = patch.record_limit_days;
 
     match {
         if auto_launch.is_some() {
@@ -75,6 +76,10 @@ pub async fn modify_common_config(patch: CommonConfig) -> Result<()> {
 
         if hotkeys.is_some() {
             GLOBAL.lock().load_shortcut_manager();
+        }
+
+        if record_limit_days.is_some() {
+            let _ = SqliteDB::new().delete_older_than_days(record_limit_days.unwrap() as i64);
         }
 
         <Result<()>>::Ok(())

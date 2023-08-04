@@ -2,6 +2,7 @@ use crate::{
     cmds,
     config::Config,
     core::{clipboard, database::SqliteDB, global::GLOBAL, sysopt},
+    events::on_records_update,
     log_err,
     utils::{dispatch_util::request_permissions, window_util::get_active_process_info},
 };
@@ -13,6 +14,7 @@ pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>
 
     {
         GLOBAL.lock().init(app.app_handle());
+        GLOBAL.lock().set_pre_process_info(get_active_process_info());
         GLOBAL.lock().load_shortcut_manager();
         GLOBAL.lock().get_window();
     }
@@ -32,7 +34,6 @@ pub fn init_window(app: &mut App) {
     let opt_win: Option<Window>;
     {
         let mut binding = GLOBAL.lock();
-        binding.set_pre_process_info(get_active_process_info());
         (opt_win, _) = binding.get_window();
     }
 

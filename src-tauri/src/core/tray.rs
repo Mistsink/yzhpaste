@@ -2,6 +2,8 @@ use tauri::{
     AppHandle, CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
 
+use crate::events::{on_window_hide_with_window, on_window_show_with_window};
+
 use super::global::GLOBAL;
 
 // 托盘菜单
@@ -49,9 +51,11 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                 }
                 "show" => {
                     window.show().unwrap();
+                    on_window_show_with_window(&window);
                 }
                 "hide" => {
                     window.hide().unwrap();
+                    on_window_hide_with_window(&window);
                 }
                 _ => {}
             },

@@ -4,10 +4,13 @@
 
 @layer components {
   .active_tag {
-    @apply bg-gray-200 rounded-md;
+    background-color: rgb(25,28,27);
   }
 
   .unactive_tag {
-    @apply hover:bg-gray-100 rounded-md ease-in-out duration-300;
+    @apply ease-in-out duration-300;
+  }
+  .unactive_tag:hover {
+    background-color: rgb(52,76,67);
   }
 }

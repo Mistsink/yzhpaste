@@ -26,7 +26,7 @@ export interface RecordCommon {
   tags: string[]
 }
 
-interface RecordOrigin {
+export interface RecordOrigin {
   id: number
   md5: string
   active_time: number
@@ -113,6 +113,7 @@ export const cmd_open_window = async () => {
 }
 
 export const cmd_print = async (msg: string) => {
+  console.log('print', msg)
   await invoke('print', { msg })
 }
 
@@ -126,4 +127,60 @@ export const cmd_write_to_clip = async (id: number) => {
 
 export const cmd_paste_in_previous_window = async () => {
   await invoke('paste_in_previous_window')
+}
+
+export interface CfgHotkeys {
+  active: string
+}
+
+export interface CommonConfig {
+  version: number
+  language: string
+  theme_mode: string
+  enable_auto_launch: boolean
+  enable_auto_paste: boolean
+  enable_delete_confirm: boolean
+  hotkeys: CfgHotkeys
+  record_limit: number
+  record_limit_days: number
+}
+
+export const cmd_get_common_config = async (): Promise<CommonConfig> => {
+  return await invoke('get_common_config')
+}
+
+export const cmd_set_common_config = async (config: any) => {
+  await invoke('set_common_config', { config })
+}
+
+export const cmd_change_languge = async (lang: string) => {
+  await invoke('change_languge', { lang })
+}
+
+export const cmd_change_record_limit = async (limit: number) => {
+  await invoke('change_record_limit', { limit })
+}
+
+export const cmd_change_record_limit_days = async (days: number) => {
+  await invoke('change_record_limit_days', { days })
+}
+
+export const cmd_change_theme_mode = async (mode: string) => {
+  await invoke('change_theme_mode', { mode })
+}
+
+export const cmd_change_auto_launch = async (enable: boolean) => {
+  await invoke('change_auto_launch', { enable })
+}
+
+export const cmd_change_auto_paste = async (enable: boolean) => {
+  await invoke('change_auto_paste', { enable })
+}
+
+export const cmd_change_delete_confirm = async (enable: boolean) => {
+  await invoke('change_delete_confirm', { enable })
+}
+
+export const cmd_change_hotkey = async (hotkey: CfgHotkeys) => {
+  await invoke('change_hotkey', { hotkey })
 }
