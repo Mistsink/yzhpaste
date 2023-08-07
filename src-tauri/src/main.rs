@@ -57,20 +57,20 @@ fn main() {
         .on_system_tray_event(tray::handler)
         .on_window_event(move |event| {
             let last_focus_time = Arc::clone(&app_state.last_focus_time);
-            if let tauri::WindowEvent::Focused(focused) = event.event() {
-                println!("window focused: {} [{}]", focused, Local::now());
-                if let Ok(mut last_focus_time) = last_focus_time.lock() {
-                    if *focused {
-                        *last_focus_time = Local::now();
-                    } else {
-                        let delta_duration = 100; // 毫秒
-                        let now = Local::now();
-                        if now - *last_focus_time > Duration::milliseconds(delta_duration) {
-                            _ = cmds::escape_win();
-                        }
-                    }
-                }
-            }
+            // if let tauri::WindowEvent::Focused(focused) = event.event() {
+            //     println!("window focused: {} [{}]", focused, Local::now());
+            //     if let Ok(mut last_focus_time) = last_focus_time.lock() {
+            //         if *focused {
+            //             *last_focus_time = Local::now();
+            //         } else {
+            //             let delta_duration = 100; // 毫秒
+            //             let now = Local::now();
+            //             if now - *last_focus_time > Duration::milliseconds(delta_duration) {
+            //                 _ = cmds::escape_win();
+            //             }
+            //         }
+            //     }
+            // }
         })
         .setup(move |app| setup::init(app))
         .build(context)

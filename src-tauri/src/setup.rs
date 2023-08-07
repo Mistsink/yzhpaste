@@ -12,14 +12,13 @@ use window_vibrancy::{self, NSVisualEffectMaterial};
 pub fn init(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error>> {
     log_err!(Config::init_config()); //  first
 
+    SqliteDB::init();
     {
         GLOBAL.lock().init(app.app_handle());
         GLOBAL.lock().set_pre_process_info(get_active_process_info());
         GLOBAL.lock().load_shortcut_manager();
         GLOBAL.lock().get_window();
     }
-    SqliteDB::init();
-    clipboard::ClipboardWatcher::start();
     log_err!(sysopt::Sysopt::global().init_launch());
 
     init_window(app);

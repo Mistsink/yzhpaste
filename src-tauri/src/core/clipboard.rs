@@ -12,6 +12,8 @@ use base64::{
 };
 use chrono::Duration;
 use serde_json::json;
+use tauri::async_runtime::JoinHandle;
+use std::sync::{Arc, Mutex};
 use std::thread;
 
 pub async fn get_clipboard_data() -> Result<String, String> {
@@ -40,6 +42,7 @@ pub async fn get_clipboard_data() -> Result<String, String> {
 
     Ok(result)
 }
+
 pub struct ClipBoardOprator;
 
 impl ClipBoardOprator {
@@ -57,11 +60,36 @@ impl ClipBoardOprator {
     }
 }
 
-pub struct ClipboardWatcher;
+#[derive(Debug, Default, Clone)]
+pub struct ClipboardWatcher {
+    stop_flag: Arc<Mutex<bool>>,
+    running: Arc<Mutex<bool>>,
+    thread_handle: Arc<Mutex<Option<JoinHandle<()>>>>,
+}
 
 impl ClipboardWatcher {
-    pub fn start() {
-        tauri::async_runtime::spawn(async {
+    pub fn new() -> Self {
+        ClipboardWatcher {
+            stop_flag: Arc::new(Mutex::new(false)),
+            running: Arc::new(Mutex::new(false)),
+            thread_handle: Arc::new(Mutex::new(None)),
+        }
+    }
+
+    pub fn start(&self) {
+        {
+            let mut running = self.running.lock().unwrap();
+            if *running {
+                println!("Already running, please stop before starting again.");
+                return;
+            }
+            *running = true;
+        }
+
+        let stop_flag = self.stop_flag.clone();
+        let running = self.running.clone();
+        let thread_handle = self.thread_handle.clone();
+        let handle = tauri::async_runtime::spawn(async move {
             // 1000毫秒检测一次剪切板变化
             let wait_millis = 1000i64;
             let mut last_content_md5 = String::new();
@@ -162,8 +190,30 @@ impl ClipboardWatcher {
                 thread::sleep(Duration::milliseconds(wait_millis).to_std().unwrap());
             };
             loop {
+                let should_stop = {
+                    let lock = stop_flag.lock().unwrap();
+                    *lock
+                };
+
+                if should_stop {
+                    let mut running = running.lock().unwrap();
+                    *running = false;
+                    break;
+                }
                 watch_fn();
             }
         });
+        *thread_handle.lock().unwrap() = Some(handle);
+    }
+
+    pub fn stop(&self) {
+        {
+            let mut stop_flag = self.stop_flag.lock().unwrap();
+            *stop_flag = true;
+        }
+        if let Some(handle) = self.thread_handle.lock().unwrap().take() {
+            // handle.join().unwrap();
+            handle.abort();
+        }
     }
 }

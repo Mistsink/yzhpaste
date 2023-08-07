@@ -7,23 +7,30 @@ const props = defineProps({
 <template>
     <div class="option-item">
         <div class="
-            bg-red-100
-            w-full text-xl
-            flex-none
+            item-title
             ">
             {{ props.title }}
         </div>
-        <div class="
-        bg-yellow-200
-        flex-auto p-4 pl-10
-        space-y-3
-        ">
+        <div class="item-content">
             <slot></slot>
         </div>
     </div>
 </template>
 <style scoped>
 .option-item {
-    @apply bg-blue-300 flex-1 h-full flex flex-col p-4 rounded-lg
+    background-color: rgb(29, 38, 35);
+    color: rgb(225, 227, 224);
+    @apply flex-1 h-full flex flex-col p-4 rounded-lg
+}
+
+.item-title {
+    background-color: rgb(94, 115, 94);
+    @apply w-full text-xl flex-none;
+}
+
+.item-content {
+    background-color: rgb(29, 38, 35);
+    color: rgb(225, 227, 224);
+    @apply flex-auto p-4 pl-10 space-y-3;
 }
 </style>

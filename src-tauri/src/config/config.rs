@@ -2,7 +2,7 @@ use super::{CommonConfig, Draft};
 use crate::{
     core::{global::GLOBAL, sysopt, database::SqliteDB},
     log_err,
-    utils::{dirs, json_util},
+    utils::{dirs, json_util}, events::on_records_update_delete,
 };
 use anyhow::Result;
 use once_cell::sync::OnceCell;
@@ -63,7 +63,11 @@ pub async fn modify_common_config(patch: CommonConfig) -> Result<()> {
 
     match {
         if auto_launch.is_some() {
-            sysopt::Sysopt::global().update_launch()?;
+            sysopt::Sysopt::global().update_launch().map_err(|e| {
+                // 在这里处理错误，e 是错误值
+                println!("An error occurred: {}", e);
+                e  // 确保返回错误，以便 `?` 可以工作
+            })?;
         }
 
         if language.is_some() {
@@ -80,6 +84,7 @@ pub async fn modify_common_config(patch: CommonConfig) -> Result<()> {
 
         if record_limit_days.is_some() {
             let _ = SqliteDB::new().delete_older_than_days(record_limit_days.unwrap() as i64);
+            on_records_update_delete();
         }
 
         <Result<()>>::Ok(())

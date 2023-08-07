@@ -5,13 +5,14 @@ use tauri::{AppHandle, Manager, Window};
 
 use crate::utils::window_util::{set_window_position_and_size, ProcessInfo};
 
-use super::shortcuts_manager::GShortcutManager;
+use super::{shortcuts_manager::GShortcutManager, clipboard::ClipboardWatcher};
 
 #[derive(Debug, Default, Clone)]
 pub struct Global {
     app_handle: Option<AppHandle>,
     pre_process_id: i32,
     pre_process_info: ProcessInfo,
+    clipboard_watcher: ClipboardWatcher,
 }
 
 impl Global {
@@ -20,6 +21,7 @@ impl Global {
             app_handle: None,
             pre_process_id: 0,
             pre_process_info: ProcessInfo::default(),
+            clipboard_watcher: ClipboardWatcher::new(),
         }
     }
 
@@ -33,7 +35,16 @@ impl Global {
     }
 
     pub fn init(&mut self, app_handle: AppHandle) {
-        self.app_handle = Some(app_handle)
+        self.app_handle = Some(app_handle);
+        self.start_watcher();
+    }
+
+    pub fn start_watcher(&self) {
+        self.clipboard_watcher.start();
+    }
+
+    pub fn stop_watcher(&self) {
+        self.clipboard_watcher.stop();
     }
 
     pub fn get_handle(&self) -> &AppHandle {

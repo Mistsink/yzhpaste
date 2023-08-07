@@ -39,15 +39,13 @@ const optView = computed(() => {
       p-2 h-8 min-h-8 max-h-8
       flex justify-center items-center
       cursor-pointer
-      " @click="router.back()">
+      " @click="router.push('/config')">
         Back
       </div>
       <button v-for="(tag, idx) in tags" :key="tag" class="
-      p-1 px-3 h-8
-      text-sm
-      flex flex-row justify-center items-center space-x-2
-    " :class="curTagIdx === idx ? 'active_tag' : 'unactive_tag'" @click="() => onChangeTag(idx)">
-        <div class="w-3 h-3 bg-green-300 rounded-full">
+      tag
+    " :class="curTagIdx === idx ? 'active-tag' : 'unactive-tag'" @click="() => onChangeTag(idx)">
+        <div class="tag-point" :class="curTagIdx === idx ? 'active-tag-point' : 'unactive-tag-point'">
         </div>
         <div class="">
           {{ tag }}
@@ -60,4 +58,52 @@ const optView = computed(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.tag {
+  width: auto;
+  min-width: 2.25rem;
+  font-size: 0.8rem;
+  min-height: 2.25rem;
+  max-height: 2.25rem;
+  @apply px-3 rounded-lg flex flex-row justify-center items-center space-x-2 leading-9 ease-in-out duration-300;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active-tag {
+  width: 8rem;
+  background-color: rgb(25, 28, 27);
+  color: rgb(225, 227, 224);
+  border: 0.12rem solid rgba(137, 147, 142, 1);
+  cursor: default;
+}
+
+.unactive-tag {
+  /* min-width: 2.25rem;
+  width: auto; */
+  width: 2.25rem;
+  color: rgb(191, 201, 195);
+  border: 0rem solid rgba(137, 147, 142, 0);
+}
+
+.unactive-tag:hover {
+  background-color: rgb(52, 76, 67);
+}
+
+.tag-point {
+  @apply w-3 h-3 rounded-full ease-in-out duration-300;
+}
+
+.active-tag-point {
+  background-color: rgb(96, 219, 184);
+}
+
+.unactive-tag-point {
+  background-color: rgb(52, 76, 67);
+}
+
+.unactive-tag:hover .unactive-tag-point {
+  background-color: rgb(96, 219, 184);
+}
+</style>

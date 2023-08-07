@@ -4,7 +4,7 @@ import OptItem from './OptItem.vue';
 <template>
     <div class="
     w-full h-full p-6
-    flex flex-row justify-even items-center
+    flex flex-row justify-evenly items-center
     bg-green-200
     space-x-8
     ">

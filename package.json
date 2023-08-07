@@ -17,7 +17,8 @@
     "pinia": "^2.0.32",
     "vue": "^3.2.47",
     "vue-filepond": "^7.0.3",
-    "vue-router": "^4.1.6"
+    "vue-router": "^4.1.6",
+    "vuesax": "4.0.1-alpha.25"
   },
   "devDependencies": {
     "@headlessui/vue": "^1.7.13",

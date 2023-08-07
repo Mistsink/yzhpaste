@@ -20,6 +20,9 @@ dependencies:
   vue-router:
     specifier: ^4.1.6
     version: 4.1.6(vue@3.2.47)
+  vuesax:
+    specifier: 4.0.1-alpha.25
+    version: registry.npmmirror.com/vuesax@4.0.1-alpha.25(vue@3.2.47)
 
 devDependencies:
   '@headlessui/vue':
@@ -4208,4 +4211,27 @@ packages:
     dependencies:
       filepond: registry.npmmirror.com/filepond@4.30.4
       vue: 3.2.47
+    dev: false
+
+  registry.npmmirror.com/vue-router@3.6.5(vue@3.2.47):
+    resolution: {integrity: sha512-VYXZQLtjuvKxxcshuRAwjHnciqZVoXAjTjcqBTz4rKc8qih9g9pI3hbDjmqXaHdgL3v8pV6P8Z335XvHzESxLQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/vue-router/-/vue-router-3.6.5.tgz}
+    id: registry.npmmirror.com/vue-router/3.6.5
+    name: vue-router
+    version: 3.6.5
+    peerDependencies:
+      vue: ^2
+    dependencies:
+      vue: 3.2.47
+    dev: false
+
+  registry.npmmirror.com/vuesax@4.0.1-alpha.25(vue@3.2.47):
+    resolution: {integrity: sha512-cVLpKsem/YsMSbiy2s2M0O6rr8wrakOUFn0JYxtVQ1WgbVUD0/kU2/GMPVeRBNOh+30tRy2TKreFmjqc53vIBQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/vuesax/-/vuesax-4.0.1-alpha.25.tgz}
+    id: registry.npmmirror.com/vuesax/4.0.1-alpha.25
+    name: vuesax
+    version: 4.0.1-alpha.25
+    requiresBuild: true
+    dependencies:
+      vue-router: registry.npmmirror.com/vue-router@3.6.5(vue@3.2.47)
+    transitivePeerDependencies:
+      - vue
     dev: false

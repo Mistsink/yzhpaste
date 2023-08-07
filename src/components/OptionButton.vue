@@ -27,7 +27,7 @@ const onClick = () => {
         option-button
         mr-1 px-1
         flex justify-center items-center
-    " @click="onClick">
+    " @click="router.push('/')">
         <button>OptionButton</button>
     </div>
     <ul v-if="isClicked" class="

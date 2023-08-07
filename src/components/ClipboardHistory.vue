@@ -81,12 +81,27 @@ const onDoubleClick = async (idx: number) => {
   const record = records.value[currentFocusIndex.value]
   await useEnterAndEsc(record.id)
 }
+const onWheel = (event: WheelEvent) => {
+  event.preventDefault();
+  if (event.deltaY < 0) {
+    setCurrentFocusIndex(currentFocusIndex.value - 1);
+  } else {
+    setCurrentFocusIndex(currentFocusIndex.value + 1);
+  }
+};
+const enableWheel = () => {
+  window.addEventListener('wheel', onWheel);
+};
+
+const disableWheel = () => {
+  window.removeEventListener('wheel', onWheel);
+};
 </script>
 
 <template>
   <div class="w-full h-full
   content-container
-  flex justify-center items-center">
+  flex justify-center items-center" @mouseover="enableWheel" @mouseleave="disableWheel">
     <p v-if="records.length === 0" class="text-4xl">No clipboard history available.</p>
     <ul ref="HistoryCtnRef" v-else class="flex flex-row 
     space-x-4 overflow-x-auto
@@ -113,12 +128,10 @@ const onDoubleClick = async (idx: number) => {
           tracking-wide
           overflow-hidden
           ">{{ item.content }}</p>
-        <img v-else :src="`data:image/jpeg;base64,${item.content.base64}`"
-        class="
+        <img v-else :src="`data:image/jpeg;base64,${item.content.base64}`" class="
           img-container
           p-4
-          "
-        />
+          " />
         <div class="flex-none
           flex
           justify-center
@@ -170,11 +183,12 @@ li {
   outline-color: rgb(96, 219, 184);
   outline-offset: 0.08rem;
 }
+
 .unactive-item {
   outline-width: 0.23rem;
   outline-style: solid;
   /* outline-color: rgb(15, 103, 200); */
-  outline-color: rgb(225,227,224);
+  outline-color: rgb(225, 227, 224);
   outline-offset: 0.08rem;
 }
 
@@ -191,22 +205,24 @@ li {
   color: rgb(225, 227, 224);
   background-color: rgb(29, 38, 35);
 }
+
 .img-container {
   flex: 1 1 auto;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  max-width: 100%;  
+  max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   background-color: rgb(29, 38, 35);
 }
+
 .img-container img {
-  max-width: 100%;  
+  max-width: 100%;
   max-height: 100%;
-  width: auto;      
-  height: auto;    
+  width: auto;
+  height: auto;
   object-fit: contain;
 }
 
