@@ -7,11 +7,20 @@ import {
   type ShortcutHandler
 } from '@tauri-apps/api/globalShortcut'
 import { getCurrent, appWindow } from '@tauri-apps/api/window'
-import { cmd_escape_win, cmd_open_window, cmd_paste_in_previous_window, cmd_print, cmd_write_to_clip } from './cmds'
+import {
+  cmd_escape_win,
+  cmd_open_window,
+  cmd_paste_in_previous_window,
+  cmd_print,
+  cmd_write_to_clip
+} from './cmds'
+import { config } from '@/stores/config'
 
 export const useEnterAndEsc = async (id: number) => {
   await cmd_write_to_clip(id)
-  await cmd_paste_in_previous_window()
+  if (config.value.enable_auto_paste) {
+    await cmd_paste_in_previous_window()
+  }
   await cmd_escape_win()
 }
 

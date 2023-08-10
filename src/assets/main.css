@@ -4,13 +4,52 @@
 
 @layer components {
   .active_tag {
-    background-color: rgb(25,28,27);
+    background-color: rgb(25, 28, 27);
   }
 
   .unactive_tag {
     @apply ease-in-out duration-300;
   }
   .unactive_tag:hover {
-    background-color: rgb(52,76,67);
+    background-color: rgb(52, 76, 67);
+  }
+}
+
+@layer components {
+  .icon {
+    height: 1.1rem;
+    width: 1.1rem;
+    min-width: 1.1rem;
+    @apply rounded-full ease-in-out duration-300 flex justify-center items-center;
+  }
+
+  .icon:hover {
+    cursor: pointer;
+  }
+
+  .icon svg {
+    @apply ease-in-out duration-300;
+  }
+
+  .active-icon svg {
+    height: 1.1rem;
+    width: 1.1rem;
+    min-width: 1.1rem;
+    fill: rgba(96, 219, 184, 1);
+  }
+
+  .unactive-icon {
+    width: 0px;
+    min-width: 0px;
+    height: 0px;
+  }
+  .unactive-icon svg {
+    fill: rgba(96, 219, 184, 0);
+  }
+  .blur-active-icon svg {
+    height: 1.1rem;
+    width: 1.1rem;
+    min-width: 1.1rem;
+    fill: rgb(145, 147, 145);
   }
 }
