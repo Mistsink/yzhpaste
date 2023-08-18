@@ -31,9 +31,9 @@ listen('on-window-show', () => {
   console.log('on-window-show');
   isWinShow.value = true
 })
-watchEffect(async () => {
-  console.log('searchText changed');
-  await recordsStoreFind(searchText.value)
+watch(searchText, async (newStr, oldStr) => {
+  console.log('searchText changed: ', newStr, '\t', oldStr);
+  await recordsStoreFind(newStr)
 })
 
 const onClickSearIcon = () => {
@@ -73,10 +73,19 @@ const onSearch = (event: KeyboardEvent) => {
 
     onClickSearIcon();
   }
-  cnt ++
+  cnt++
 }
 const onSearchInpBlur = () => {
   console.log('onSearchInpBlur, isWinShow', isWinShow.value);
+  // 一般是鼠标点击事件，点击某个记录时造成 失焦 事件，通过延时让点击事件正确执行后再重新聚焦
+  if (searchText.value && isWinShow.value && SearchInpRef.value) {
+    setTimeout(() => {
+      SearchInpRef.value.focus()
+      console.log('onSearchInpBlur, focus');
+    }, 100);
+    return;
+  }
+
   if (isWinShow.value && SearchInpRef.value) {
     SearchInpRef.value.focus()
     console.log('onSearchInpBlur, focus');
@@ -126,7 +135,7 @@ watch(isSearching, () => {
           {{ tag }}
         </div>
       </button>
-      <div class="absolute right-1">
+      <div class="absolute right-6">
         <OptionButton />
       </div>
     </div>

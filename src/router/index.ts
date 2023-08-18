@@ -9,12 +9,12 @@ const router = createRouter({
     {
       path: '/',
       name: 'content',
-      component: () => import('../views/ConfigView.vue')
+      component: ContentView
     },
     {
       path: '/config',
       name: 'config',
-      component: ContentView
+      component: () => import('../views/ConfigView.vue')
     }
   ]
 })

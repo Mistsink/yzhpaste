@@ -7,15 +7,20 @@ mod cmds;
 mod config;
 mod core;
 mod events;
-use chrono::{DateTime, Local, Duration};
-use events::on_records_update;
+use chrono::{DateTime, Duration, Local};
+use tauri::Manager;
+use tauri_plugin_autostart::MacosLauncher;
 mod setup;
 mod utils;
 use crate::core::{global::GLOBAL, tray};
 use std::sync::{Arc, Mutex};
 pub struct PreviousProcessId(Mutex<i32>);
 pub struct GAppHandle(Mutex<Option<tauri::AppHandle>>);
-
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+    args: Vec<String>,
+    cwd: String,
+}
 fn main() {
     // let g_app_handle = ;
     let app_state = AppState::new();
@@ -23,6 +28,19 @@ fn main() {
     let context = tauri::generate_context!();
     let app = tauri::Builder::default()
         .manage(GAppHandle(Mutex::new(None)))
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            println!(
+                "[Plugin] single-instance {}, {argv:?}, {cwd}",
+                app.package_info().name
+            );
+
+            app.emit_all("single-instance", Payload { args: argv, cwd })
+                .unwrap();
+        }))
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            None,
+        ))
         .invoke_handler(tauri::generate_handler![
             // config
             cmds::get_common_config,
@@ -57,20 +75,20 @@ fn main() {
         .on_system_tray_event(tray::handler)
         .on_window_event(move |event| {
             let last_focus_time = Arc::clone(&app_state.last_focus_time);
-            // if let tauri::WindowEvent::Focused(focused) = event.event() {
-            //     println!("window focused: {} [{}]", focused, Local::now());
-            //     if let Ok(mut last_focus_time) = last_focus_time.lock() {
-            //         if *focused {
-            //             *last_focus_time = Local::now();
-            //         } else {
-            //             let delta_duration = 100; // 毫秒
-            //             let now = Local::now();
-            //             if now - *last_focus_time > Duration::milliseconds(delta_duration) {
-            //                 _ = cmds::escape_win();
-            //             }
-            //         }
-            //     }
-            // }
+            if let tauri::WindowEvent::Focused(focused) = event.event() {
+                println!("window focused: {} [{}]", focused, Local::now());
+                if let Ok(mut last_focus_time) = last_focus_time.lock() {
+                    if *focused {
+                        *last_focus_time = Local::now();
+                    } else {
+                        let delta_duration = 100; // 毫秒
+                        let now = Local::now();
+                        if now - *last_focus_time > Duration::milliseconds(delta_duration) {
+                            _ = cmds::escape_win();
+                        }
+                    }
+                }
+            }
         })
         .setup(move |app| setup::init(app))
         .build(context)

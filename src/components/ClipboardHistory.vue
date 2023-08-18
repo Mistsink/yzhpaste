@@ -2,7 +2,7 @@
 import { nextTick, onUnmounted, onMounted, onUpdated, ref, watch, watchEffect, onActivated, onDeactivated } from 'vue'
 import { useScrollToSelectedItem } from '@/utils/scroll'
 import { useEnterAndEsc } from '@/services/shortcuts'
-import { currentFocusIndex, records, setCurrentFocusIndex } from '@/stores/records'
+import { currentFocusIndex, records, setCurrentFocusIndex, deleteRecord } from '@/stores/records'
 
 
 onMounted(async () => {
@@ -82,6 +82,10 @@ const onDoubleClick = async (idx: number) => {
   await useEnterAndEsc(record.id)
 }
 const onWheel = (event: WheelEvent) => {
+  if (event.deltaY === -0) {
+    return;
+  }; // 触摸板滚动事件
+
   event.preventDefault();
   if (event.deltaY < 0) {
     setCurrentFocusIndex(currentFocusIndex.value - 1);
@@ -96,6 +100,11 @@ const enableWheel = () => {
 const disableWheel = () => {
   window.removeEventListener('wheel', onWheel);
 };
+
+const onDelete = async (event: Event, index: number) => {
+  event.stopPropagation();
+  await deleteRecord(index)
+}
 </script>
 
 <template>
@@ -138,9 +147,18 @@ const disableWheel = () => {
           items-center
           shadow-top
           item-footer
+          relative
         ">
           {{ item.data_type === 'text' ? `${item.content.length} 字符` : `${item.content.width} x ${item.content.height} 像素`
           }}
+
+          <div class="icon" @click="e => onDelete(e, index)">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24">
+              <path
+                d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8zm3.59-13L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z">
+              </path>
+            </svg>
+          </div>
         </div>
       </li>
     </ul>
@@ -232,5 +250,26 @@ li {
   color: rgba(225, 227, 224, 0.7);
   background-color: rgb(29, 38, 35);
   padding: 0.15rem 0;
+}
+
+li:hover .icon, li:hover .icon svg {
+  height: 1.2rem;
+  width: 1.2rem;
+  min-width: 1.2rem;
+}
+
+.icon, .icon svg {
+  width: 0px;
+  min-width: 0px;
+  height: 0px;
+  @apply ease-in-out duration-300;
+}
+
+.icon {
+  @apply absolute right-4;
+}
+
+.icon svg {
+  fill: rgba(96, 219, 184, 1);
 }
 </style>

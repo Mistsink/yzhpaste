@@ -24,8 +24,8 @@ const props = defineProps({
 }
 
 .item-title {
-    background-color: rgb(94, 115, 94);
-    @apply w-full text-xl flex-none;
+    /* background-color: rgb(94, 115, 94); */
+    @apply w-full text-2xl flex-none;
 }
 
 .item-content {

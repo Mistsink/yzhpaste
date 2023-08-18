@@ -63,11 +63,11 @@ pub async fn modify_common_config(patch: CommonConfig) -> Result<()> {
 
     match {
         if auto_launch.is_some() {
-            sysopt::Sysopt::global().update_launch().map_err(|e| {
-                // 在这里处理错误，e 是错误值
-                println!("An error occurred: {}", e);
-                e  // 确保返回错误，以便 `?` 可以工作
-            })?;
+            // sysopt::Sysopt::global().update_launch().map_err(|e| {
+            //     // 在这里处理错误，e 是错误值
+            //     println!("An error occurred: {}", e);
+            //     e  // 确保返回错误，以便 `?` 可以工作
+            // })?;
         }
 
         if language.is_some() {

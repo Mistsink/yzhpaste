@@ -6,6 +6,18 @@ const props = defineProps({
     modelValue: {
         type: Number,
         default: 0
+    },
+    onConfirm: {
+        type: Function,
+        default: () => { console.log('onConfirm') }
+    },
+    onCancle: {
+        type: Function,
+        default: () => { console.log('onCancle') }
+    },
+    showConfirm: {
+        type: Boolean,
+        default: true
     }
 })
 const emit = defineEmits(['update:modelValue'])
@@ -35,14 +47,25 @@ const validateInt = (event) => {
         'unfocus-num-inp-container': !focus
     }" ref="NumInpContainerRef" :tabindex="0" @focus="focus = true" @blur="focus = false">
         <input class="num-inp" :class="{ focus: focus }" type="text" @focus="() => focus = true" @blur="() => focus = false"
-            :value="props.modelValue" @input="validateInt" maxlength="3"/>
+            :value="props.modelValue" @input="validateInt" maxlength="3" />
         <div class="icon" :class="{
-            'active-icon': focus,
-            'unactive-icon': !focus
-        }">
+            'active-icon': focus && props.showConfirm,
+            'unactive-icon': (!focus) || (!props.showConfirm)
+        }" @click="props.onConfirm">
             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24">
                 <path
                     d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2zm0 1.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 0 0 0-17zm-1.25 9.94l4.47-4.47a.75.75 0 0 1 1.133.976l-.073.084l-5 5a.75.75 0 0 1-.976.073l-.084-.073l-2.5-2.5a.75.75 0 0 1 .976-1.133l.084.073l1.97 1.97l4.47-4.47l-4.47 4.47z">
+                </path>
+            </svg>
+        </div>
+        <div class="icon" :class="{
+            'active-icon': focus && props.showConfirm,
+            'unactive-icon': (!focus) || (!props.showConfirm)
+        }" @click="props.onCancle">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24">
+                <path
+                    d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10s10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8zm3.59-13L12 10.59L8.41 7L7 8.41L10.59 12L7 15.59L8.41 17L12 13.41L15.59 17L17 15.59L13.41 12L17 8.41z">
                 </path>
             </svg>
         </div>
@@ -110,7 +133,7 @@ const validateInt = (event) => {
 }
 
 .num-inp {
-    @apply h-full appearance-none bg-transparent outline-none ease-in-out duration-300;
+    @apply w-full h-full appearance-none bg-transparent outline-none ease-in-out duration-300;
 }
 
 .num-inp.focus {

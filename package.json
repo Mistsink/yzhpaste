@@ -15,6 +15,7 @@
   "dependencies": {
     "filepond": "^4.30.4",
     "pinia": "^2.0.32",
+    "tauri-plugin-autostart-api": "github:tauri-apps/tauri-plugin-autostart#v1",
     "vue": "^3.2.47",
     "vue-filepond": "^7.0.3",
     "vue-router": "^4.1.6",

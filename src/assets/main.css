@@ -53,3 +53,8 @@
     fill: rgb(145, 147, 145);
   }
 }
+
+body {
+  overscroll-behavior-x: none;
+}
+/* 阻止在达到滚动容器边界时的滚动传播到祖先元素，从而可能阻止了 Safari 的左右滑动行为 */

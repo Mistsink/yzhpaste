@@ -6,8 +6,6 @@ use tauri::LogicalPosition;
 use tauri::Window;
 use tauri::{LogicalSize, PhysicalPosition};
 
-use crate::cmds::print;
-
 #[allow(unused)]
 pub fn slide_up(window: &Window) {
     let monitor = window.current_monitor().unwrap().expect("No monitor found");
@@ -52,6 +50,18 @@ pub fn slide_down(window: &Window) {
     }
 }
 
+fn logical2physical(window: &Window, size: u32) -> u32 {
+    let monitor = window.current_monitor().unwrap().expect("No monitor found");
+    let scale_factor = monitor.scale_factor();
+    (size as f64 * scale_factor) as u32
+}
+
+fn physical2logical(window: &Window, size: u32) -> u32 {
+    let monitor = window.current_monitor().unwrap().expect("No monitor found");
+    let scale_factor = monitor.scale_factor();
+    (size as f64 / scale_factor) as u32
+}
+
 fn get_logical_resolution(window: &Window) -> LogicalSize<u32> {
     let monitor = window.current_monitor().unwrap().expect("No monitor found");
 
@@ -79,6 +89,24 @@ pub fn get_window_position_and_size(window: &Window) -> (LogicalPosition<u32>, L
     (LogicalPosition::new(x, y), LogicalSize::new(width, height))
 }
 
+#[cfg(target_os = "windows")]
+use winapi::shared::windef::RECT;
+use winapi::um::winuser::{SystemParametersInfoW, SPI_GETWORKAREA};
+fn get_workarea_dimensions() -> (i32, i32, i32, i32) {
+    let mut rect = RECT {
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: 0,
+    };
+
+    unsafe {
+        SystemParametersInfoW(SPI_GETWORKAREA, 0, &mut rect as *mut _ as *mut _, 0);
+    }
+
+    (rect.left, rect.top, rect.right, rect.bottom)
+}
+
 pub(crate) fn set_window_position_and_size(window: &Window) {
     // window.set_always_on_top(true);
 
@@ -90,16 +118,38 @@ pub(crate) fn set_window_position_and_size(window: &Window) {
     let y = logical_size.height - height;
 
     #[cfg(target_os = "windows")]
-    windows::get_taskbar_info().map(|(taskbar_height, visible)| {
-        if visible {
-            height = height - taskbar_height + 4;
-        }
-    });
+    {
+        let (left, top, right, bottom) = get_workarea_dimensions();
+        println!(
+            "left: {}, top: {}, right: {}, bottom: {}",
+            left, top, right, bottom
+        );
+        println!(
+            "logical: left: {}, top: {}, right: {}, bottom: {}",
+            physical2logical(window, left as u32),
+            physical2logical(window, top as u32),
+            physical2logical(window, right as u32),
+            physical2logical(window, bottom as u32)
+        );
+        println!("x: {}, y: {}, width: {}, height: {}, logical_size.height: {}", x, y, width, height, logical_size.height);
+        height = physical2logical(window, bottom as u32) - y;
+        println!("height: {}", height);
+        height -= 20;
+        println!("height: {}", height);
+
+        // windows::get_taskbar_info().map(|(taskbar_height, visible)| {
+        //     if visible {
+        //         println!("taskbar_height: {}", taskbar_height);
+        //         height = height - physical2logical(window, taskbar_height);
+        //         println!("height: {}", height);
+        //     }
+        // });
+    }
 
     // println!("size {} {}", logical_size.width, logical_size.height);
-    // println!("x {} y {} width{} height{}", x, y, width, height);
-    _ = window.set_size(LogicalSize::new(width, height));
+    println!("x {} y {} width{} height{}", x, y, width, height);
     _ = window.set_position(LogicalPosition::new(x, y));
+    _ = window.set_size(LogicalSize::new(width, height));
 }
 
 #[cfg(target_os = "windows")]

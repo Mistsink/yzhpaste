@@ -7,7 +7,8 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter()
 
-const tags = ['通用', '快捷键', '同步', '订阅']
+// const tags = ['通用', '快捷键', '同步', '订阅']
+const tags = ['通用']
 const curTagIdx = ref(0)
 const onChangeTag = (idx: number) => {
   curTagIdx.value = idx
@@ -30,17 +31,17 @@ const optView = computed(() => {
   <div class="flex flex-col h-full">
     <div class="
     flex-none flex flex-row justify-center items-center
-    p-4 h-16 min-h-16 max-h-16
+    p-4 pb-0 h-16 min-h-16 max-h-16
     space-x-3 duration-300 ease-in-out
     ">
       <div class="
-      absolute left-2
-      unactive_tag
-      p-2 h-8 min-h-8 max-h-8
+      absolute left-6
+      back-btn
+      mr-1 px-1
       flex justify-center items-center
-      cursor-pointer
-      " @click="router.push('/config')">
-        Back
+      unactive_tag
+      " @click="router.push('/')">
+        <button>返回</button>
       </div>
       <button v-for="(tag, idx) in tags" :key="tag" class="
       tag
@@ -105,5 +106,17 @@ const optView = computed(() => {
 
 .unactive-tag:hover .unactive-tag-point {
   background-color: rgb(96, 219, 184);
+}
+
+.back-btn {
+  font-size: 0.8rem;
+  background-color: rgb(25,28,27);
+  color: rgb(225,227,224);
+  border-radius: 1.125rem;
+  @apply px-3 flex flex-row justify-center items-center space-x-2 leading-9 ease-in-out duration-300;
+  cursor: pointer;
+}
+.back-btn:hover {
+    background-color: rgb(52,76,67);
 }
 </style>
