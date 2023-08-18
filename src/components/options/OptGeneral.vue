@@ -59,7 +59,7 @@ const tmp_record_limit_days = ref(config.value.record_limit_days)
             <NumInput v-model="tmp_record_limit_days" :onConfirm="onRecordLimitDaysConfirm"
                 :onCancle="onRecordLimitDaysCancle" :showConfirm="tmp_record_limit_days !== config.record_limit_days" />
         </OptItem>
-        <OptItem title="快捷键设置[TODO]">
+        <OptItem title="快捷键设置">
             <KeysInput />
         </OptItem>
     </div>

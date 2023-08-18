@@ -2,7 +2,10 @@ use tauri::{
     AppHandle, CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
 
-use crate::events::{on_window_hide_with_window, on_window_show_with_window};
+use crate::{
+    cmds::open_window,
+    events::{on_window_hide_with_window, on_window_show_with_window},
+};
 
 use super::global::GLOBAL;
 

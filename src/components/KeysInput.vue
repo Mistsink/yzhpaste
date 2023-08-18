@@ -4,9 +4,7 @@ import { Code2Number, Key2Number } from '@/utils/keyboard';
 import { ref } from 'vue';
 
 const focus = ref(false)
-
-
-const hotkeys = config.value.hotkeys.active
+const KeysInpRef = ref<HTMLElement | null>(null)
 const tmpHotkeys = ref('')
 let keysPressed: Record<string, string> = {}
 const onKeydown = (event: KeyboardEvent) => {
@@ -47,16 +45,20 @@ const onClearTmpHotkeys = () => {
 }
 const onConfirmHotkeys = () => {
     // TODO
-    console.log('onConfirmHotkeys')
-    // config.value.hotkeys.active = tmpHotkeys.value
+    if (!KeysInpRef.value) {
+        return
+    }
+    console.log('onConfirmHotkeys: ', tmpHotkeys.value)
+    config.value.hotkeys.active = tmpHotkeys.value
     onClearTmpHotkeys()
+    KeysInpRef.value.blur()
 }
 </script>
 <template>
-    <div class="keys-inp-container" :tabindex="0" @focus="focus = true" @blur="focus = false" @keydown="onKeydown"
-        @keyup="clearKeys">
+    <div class="keys-inp-container" ref="KeysInpRef" :tabindex="0" @focus="focus = true" @blur="focus = false"
+        @keydown="onKeydown" @keyup="clearKeys">
         <div v-if="tmpHotkeys" class="hot-keys tmp-hot-keys">{{ tmpHotkeys }}</div>
-        <div v-else class="hot-keys placehold-hot-keys">{{ hotkeys }}</div>
+        <div v-else class="hot-keys placehold-hot-keys">{{ config.hotkeys.active }}</div>
         <div class="cancel-icon" :class="{
             'active-cancel-icon': focus && tmpHotkeys,
             'unactive-cancel-icon': !tmpHotkeys,

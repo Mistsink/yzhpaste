@@ -11,8 +11,17 @@ impl GShortcutManager {
         let hotkeys = Config::common().latest().hotkeys.clone();
         if let Some(hotkeys) = hotkeys {
             let mut manager = self.get_shortcuts_manager(app);
+            _ = manager.unregister_all();
+            
+            println!("hotkeys: {:?}", hotkeys);
 
-            _ = manager.register(hotkeys.active.as_str(), || _ = open_window())
+            
+            // manager.register(hotkeys.active.as_str(), || {
+            //     _ = open_window();
+            // });
+            if let Err(e) = manager.register(hotkeys.active.as_str(), || _ = open_window()) {
+                println!("register active hotkey error: {:?}", e);
+            }
         }
     }
     #[allow(unused)]
